@@ -1,0 +1,4 @@
+(library
+ (name OcplibSimplex)
+ (public_name ocplib-simplex)
+ (modules_without_implementation coreSig extSigs))
