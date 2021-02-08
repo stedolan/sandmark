@@ -1,0 +1,41 @@
+(************************************************************************)
+(*         *   The Coq Proof Assistant / The Coq Development Team       *)
+(*  v      *         Copyright INRIA, CNRS and contributors             *)
+(* <O___,, * (see version control and CREDITS file for authors & dates) *)
+(*   \VV/  **************************************************************)
+(*    //   *    This file is distributed under the terms of the         *)
+(*         *     GNU Lesser General Public License Version 2.1          *)
+(*         *     (see LICENSE file for the text of the license)         *)
+(************************************************************************)
+
+DECLARE PLUGIN "numeral_notation_plugin"
+
+{
+
+open Notation
+open Numeral
+open Pp
+open Names
+open Stdarg
+open Pcoq.Prim
+
+let pr_numnot_option = function
+  | Nop -> mt ()
+  | Warning n -> str "(warning after " ++ NumTok.UnsignedNat.print n ++ str ")"
+  | Abstract n -> str "(abstract after " ++ NumTok.UnsignedNat.print n ++ str ")"
+
+}
+
+VERNAC ARGUMENT EXTEND numnotoption
+  PRINTED BY { pr_numnot_option }
+| [ ] -> { Nop }
+| [ "(" "warning" "after" bignat(waft) ")" ] -> { Warning (NumTok.UnsignedNat.of_string waft) }
+| [ "(" "abstract" "after" bignat(n) ")" ] -> { Abstract (NumTok.UnsignedNat.of_string n) }
+END
+
+VERNAC COMMAND EXTEND NumeralNotation CLASSIFIED AS SIDEFF
+  | #[ locality = Attributes.locality; ] [ "Numeral" "Notation" reference(ty) reference(f) reference(g) ":"
+      ident(sc) numnotoption(o) ] ->
+
+    { vernac_numeral_notation (Locality.make_module_locality locality) ty f g (Id.to_string sc) o }
+END

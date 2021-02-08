@@ -1,0 +1,2075 @@
+(************************************************************************)
+(*         *   The Coq Proof Assistant / The Coq Development Team       *)
+(*  v      *         Copyright INRIA, CNRS and contributors             *)
+(* <O___,, * (see version control and CREDITS file for authors & dates) *)
+(*   \VV/  **************************************************************)
+(*    //   *    This file is distributed under the terms of the         *)
+(*         *     GNU Lesser General Public License Version 2.1          *)
+(*         *     (see LICENSE file for the text of the license)         *)
+(************************************************************************)
+
+(* Defines additional productions and edits for use in documentation.  Not compiled into Coq *)
+
+DOC_GRAMMAR
+
+(* renames to eliminate qualified names
+   put other renames at the end *)
+RENAME: [
+  (* map missing names for rhs *)
+| Constr.constr term
+| Constr.constr_pattern constr_pattern
+| Constr.global global
+| Constr.lconstr lconstr
+| Constr.lconstr_pattern cpattern
+| G_vernac.query_command query_command
+| G_vernac.section_subset_expr section_subset_expr
+| Pltac.tactic tactic
+| Pltac.tactic_expr tactic_expr5
+| Prim.ident ident
+| Prim.reference reference
+| Pvernac.Vernac_.main_entry vernac_control
+| Tactic.tactic tactic
+
+  (* SSR *)
+(*
+| G_vernac.def_body def_body
+| Pcoq.Constr.constr term
+| Prim.by_notation by_notation
+| Prim.identref ident
+| Prim.natural natural
+*)
+| Vernac.rec_definition rec_definition
+(* todo: hmm, rename adds 1 prodn to closed_binder?? *)
+| Constr.closed_binder closed_binder
+]
+
+(* written in OCaml *)
+impl_ident_head: [
+| "{" ident
+]
+
+lpar_id_coloneq: [
+| "(" ident; ":="
+]
+
+(* lookahead symbols *)
+DELETE: [
+| check_for_coloneq
+| local_test_lpar_id_colon
+| lookup_at_as_comma
+| test_only_starredidentrefs
+| test_bracket_ident
+| test_hash_ident
+| test_id_colon
+| test_lpar_id_colon
+| test_lpar_id_coloneq  (* todo: grammar seems incorrect, repeats the "(" IDENT ":=" *)
+| test_lpar_id_rpar
+| test_lpar_idnum_coloneq
+| test_show_goal
+| test_name_colon
+| test_pipe_closedcurly
+| ensure_fixannot
+
+  (* SSR *)
+(* | ssr_null_entry *)
+(*
+| ssrtermkind  (* todo: rename as "test..." *)
+| term_annotation  (* todo: rename as "test..." *)
+| test_idcomma
+| test_nohidden
+| test_not_ssrslashnum
+| test_ssr_rw_syntax
+| test_ssreqid
+| test_ssrfwdid
+| test_ssrseqvar
+| test_ssrslashnum00
+| test_ssrslashnum01
+| test_ssrslashnum10
+| test_ssrslashnum11
+| test_ident_no_do
+| ssrdoarg  (* todo: this and the next one should be removed from the grammar? *)
+| ssrseqdir
+*)
+
+(* unused *)
+| constr_comma_sequence'
+| auto_using'
+| constr_may_eval
+]
+
+(* ssrintrosarg: [ | DELETENT ] *)
+
+(* additional nts to be spliced *)
+
+hyp: [
+| var
+]
+
+tactic_then_last: [
+| REPLACE "|" LIST0 ( OPT tactic_expr5 ) SEP "|"
+| WITH LIST0 ( "|" ( OPT tactic_expr5 ) )
+]
+
+goal_tactics: [
+| LIST0 ( OPT tactic_expr5 ) SEP "|"
+]
+
+tactic_then_gen: [ | DELETENT ]
+
+tactic_then_gen: [
+| goal_tactics
+| OPT ( goal_tactics "|" ) OPT tactic_expr5 ".." OPT ( "|" goal_tactics )
+]
+
+tactic_then_last: [
+| OPTINREF
+]
+
+reference: [ | DELETENT ]
+
+reference: [
+| qualid
+]
+
+fullyqualid: [ | DELETENT ]
+
+fullyqualid: [
+| qualid
+]
+
+field_ident: [
+| "." ident
+]
+
+qualid: [ | DELETENT ]
+
+qualid: [
+| ident LIST0 field_ident
+]
+
+field: [ | DELETENT ]
+fields: [ | DELETENT ]
+
+dirpath: [
+| REPLACE ident LIST0 field
+| WITH LIST0 ( ident "." ) ident
+]
+
+binders: [
+| DELETE Pcoq.Constr.binders  (* todo: not sure why there are 2 "binders:" *)
+]
+
+lconstr: [
+| DELETE l_constr
+]
+
+
+let_type_cstr: [
+| DELETE OPT [ ":" lconstr ]
+| type_cstr
+]
+
+(* rename here because we want to use "return_type" for something else *)
+RENAME: [
+| return_type as_return_type
+]
+
+case_item: [
+| REPLACE operconstr100 OPT [ "as" name ] OPT [ "in" pattern200 ]
+| WITH operconstr100 OPT ("as" name) OPT [ "in" pattern200 ]
+]
+
+binder_constr: [
+| MOVETO term_forall_or_fun "forall" open_binders "," operconstr200
+| MOVETO term_forall_or_fun "fun" open_binders "=>" operconstr200
+| MOVETO term_let "let" name binders let_type_cstr ":=" operconstr200 "in" operconstr200
+| MOVETO term_if "if" operconstr200 as_return_type "then" operconstr200 "else" operconstr200
+| MOVETO term_fix "let" "fix" fix_decl "in" operconstr200
+| MOVETO term_cofix "let" "cofix" cofix_decl "in" operconstr200
+| MOVETO term_let "let" [ "(" LIST0 name SEP "," ")" | "()" ] as_return_type ":=" operconstr200 "in" operconstr200
+| MOVETO term_let "let" "'" pattern200 ":=" operconstr200 "in" operconstr200
+| MOVETO term_let "let" "'" pattern200 ":=" operconstr200 case_type "in" operconstr200
+| MOVETO term_let "let" "'" pattern200 "in" pattern200 ":=" operconstr200 case_type "in" operconstr200
+| MOVETO term_fix "fix" fix_decls
+| MOVETO term_cofix "cofix" cofix_decls
+]
+
+term_let: [
+| REPLACE "let" name binders let_type_cstr ":=" operconstr200 "in" operconstr200
+| WITH "let" name let_type_cstr ":=" operconstr200 "in" operconstr200
+| "let" name LIST1 binder let_type_cstr ":=" operconstr200 "in" operconstr200
+(* Don't need to document that "( )" is equivalent to "()" *)
+| REPLACE "let" [ "(" LIST0 name SEP "," ")" | "()" ] as_return_type ":=" operconstr200 "in" operconstr200
+| WITH "let" "(" LIST0 name SEP "," ")" as_return_type ":=" operconstr200 "in" operconstr200
+| REPLACE "let" "'" pattern200 ":=" operconstr200 "in" operconstr200
+| WITH  "let" "'" pattern200 ":=" operconstr200 OPT case_type "in" operconstr200
+| DELETE "let" "'" pattern200 ":=" operconstr200 case_type "in" operconstr200
+]
+
+atomic_constr: [
+| MOVETO qualid_annotated global univ_instance
+| MOVETO primitive_notations NUMERAL
+| MOVETO primitive_notations string
+| MOVETO term_evar "_"
+| REPLACE "?" "[" ident "]"
+| WITH "?[" ident "]"
+| MOVETO term_evar "?[" ident "]"
+| REPLACE "?" "[" pattern_ident "]"
+| WITH "?[" pattern_ident "]"
+| MOVETO term_evar "?[" pattern_ident "]"
+| MOVETO term_evar pattern_ident evar_instance
+]
+
+tactic_expr0: [
+| REPLACE "[" ">" tactic_then_gen "]"
+| WITH "[>" tactic_then_gen "]"
+]
+
+(* lexer token *)
+IDENT: [
+| ident
+]
+
+scope_key: [
+| IDENT
+]
+
+scope_name: [
+| IDENT
+]
+
+scope: [
+| scope_name
+| scope_key
+]
+
+scope_delimiter: [
+| REPLACE "%" IDENT
+| WITH "%" scope_key
+]
+
+type: [
+| operconstr200
+]
+
+operconstr100: [
+| REPLACE operconstr99 "<:" operconstr200
+| WITH operconstr99 "<:" type
+| MOVETO term_cast operconstr99 "<:" type
+| REPLACE operconstr99 "<<:" operconstr200
+| WITH operconstr99 "<<:" type
+| MOVETO term_cast operconstr99 "<<:" type
+| REPLACE operconstr99 ":" operconstr200
+| WITH operconstr99 ":" type
+| MOVETO term_cast operconstr99 ":" type
+| MOVETO term_cast operconstr99 ":>"
+]
+
+constr: [
+| REPLACE "@" global univ_instance
+| WITH "@" qualid_annotated
+| MOVETO term_explicit "@" qualid_annotated
+]
+
+operconstr10: [
+(* Separate this LIST0 in the nonempty and the empty case *)
+(* The empty case is covered by constr *)
+| REPLACE "@" global univ_instance LIST0 operconstr9
+| WITH "@" qualid_annotated LIST1 operconstr9
+| REPLACE operconstr9
+| WITH constr
+| MOVETO term_application operconstr9 LIST1 appl_arg
+| MOVETO term_application "@" qualid_annotated LIST1 operconstr9
+(* fixme: add in as a prodn somewhere *)
+| MOVETO dangling_pattern_extension_rule "@" pattern_identref LIST1 identref
+| DELETE dangling_pattern_extension_rule
+]
+
+operconstr9: [
+(* @Zimmi48: Special token .. is for use in the Notation command. (see bug_3304.v) *)
+| DELETE ".." operconstr0 ".."
+]
+
+operconstr1: [
+| REPLACE operconstr0 ".(" global LIST0 appl_arg ")"
+| WITH    operconstr0 ".(" global LIST0 appl_arg ")" (* huh? *)
+| REPLACE operconstr0 "%" IDENT
+| WITH operconstr0 "%" scope_key
+| MOVETO term_scope operconstr0 "%" scope_key
+| MOVETO term_projection operconstr0 ".(" global LIST0 appl_arg ")"
+| MOVETO term_projection operconstr0 ".(" "@" global LIST0 ( operconstr9 ) ")"
+]
+
+operconstr0: [
+(* @Zimmi48: This rule is a hack, according to Hugo, and should not be shown in the manual. *)
+| DELETE "{" binder_constr "}"
+| REPLACE "{|" record_declaration bar_cbrace
+| WITH "{|" LIST0 field_def bar_cbrace
+| MOVETO term_record "{|" LIST0 field_def bar_cbrace
+| MOVETO term_generalizing "`{" operconstr200 "}"
+| MOVETO term_generalizing "`(" operconstr200 ")"
+| MOVETO term_ltac "ltac" ":" "(" tactic_expr5 ")"
+]
+
+fix_decls: [
+| DELETE fix_decl
+| REPLACE fix_decl "with" LIST1 fix_decl SEP "with" "for" identref
+| WITH fix_decl OPT ( LIST1 ("with" fix_decl) "for" identref )
+]
+
+cofix_decls: [
+| DELETE cofix_decl
+| REPLACE cofix_decl "with" LIST1 cofix_decl SEP "with" "for" identref
+| WITH cofix_decl OPT ( LIST1 ( "with" cofix_decl ) "for" identref )
+]
+
+fields_def: [
+| REPLACE field_def ";" fields_def
+| WITH LIST1 field_def SEP ";"
+| DELETE field_def
+]
+
+binders_fixannot: [
+| DELETE binder binders_fixannot
+| DELETE fixannot
+| DELETE (* empty *)
+| LIST0 binder OPT fixannot
+]
+
+binder: [
+| DELETE name
+]
+
+open_binders: [
+| REPLACE name LIST0 name ":" lconstr
+| WITH LIST1 name ":" lconstr
+(* @Zimmi48: Special token .. is for use in the Notation command. (see bug_3304.v) *)
+| DELETE name ".." name
+| REPLACE name LIST0 name binders
+| WITH LIST1 binder
+| DELETE closed_binder binders
+]
+
+closed_binder: [
+| name
+
+| REPLACE "(" name LIST1 name ":" lconstr ")"
+| WITH "(" LIST1 name ":" type ")"
+| DELETE "(" name ":" lconstr ")"
+
+| DELETE "(" name ":=" lconstr ")"
+
+| REPLACE "(" name ":" lconstr ":=" lconstr ")"
+| WITH "(" name type_cstr ":=" lconstr ")"
+
+| DELETE "{" name "}"
+| DELETE "{" name LIST1 name "}"
+
+| REPLACE "{" name LIST1 name ":" lconstr "}"
+| WITH "{" LIST1 name type_cstr "}"
+| DELETE "{" name ":" lconstr  "}"
+| MOVETO implicit_binders "{" LIST1 name type_cstr "}"
+
+| DELETE "[" name "]"
+| DELETE "[" name LIST1 name "]"
+
+| REPLACE "[" name LIST1 name ":" lconstr "]"
+| WITH "[" LIST1 name type_cstr "]"
+| DELETE "[" name ":" lconstr  "]"
+| MOVETO implicit_binders "[" LIST1 name type_cstr "]"
+
+| REPLACE "(" Prim.name ":" lconstr "|" lconstr ")"
+| WITH "(" Prim.name ":" type "|" lconstr ")"
+
+| MOVETO generalizing_binder "`(" LIST1 typeclass_constraint SEP "," ")"
+| MOVETO generalizing_binder "`{" LIST1 typeclass_constraint SEP "," "}"
+| MOVETO generalizing_binder "`[" LIST1 typeclass_constraint SEP "," "]"
+]
+
+name_colon: [
+| name ":"
+]
+
+typeclass_constraint: [
+| EDIT ADD_OPT "!" operconstr200
+| REPLACE "{" name "}" ":" [ "!" | ] operconstr200
+| WITH "{" name "}" ":" OPT "!"  operconstr200
+| REPLACE name ":" [ "!" | ] operconstr200
+| WITH name ":" OPT "!" operconstr200
+]
+
+(* ?? From the grammar, Prim.name seems to be only "_" but ident is also accepted "*)
+Prim.name: [
+| REPLACE "_"
+| WITH name
+]
+
+oriented_rewriter: [
+| REPLACE orient_rw rewriter
+| WITH orient rewriter
+]
+
+DELETE: [
+| orient_rw
+]
+
+pattern10: [
+| REPLACE pattern1 LIST1 pattern1
+| WITH pattern1 LIST0 pattern1
+| DELETE pattern1
+]
+
+pattern1: [
+| REPLACE pattern0 "%" IDENT
+| WITH pattern0 "%" scope_key
+]
+
+pattern0: [
+| REPLACE "(" pattern200 ")"
+| WITH "(" LIST1 pattern200 SEP "|" ")"
+| DELETE "(" pattern200 "|" LIST1 pattern200 SEP "|" ")"
+| REPLACE "{|" record_patterns bar_cbrace
+| WITH "{|" LIST0 record_pattern bar_cbrace
+]
+
+DELETE: [
+| record_patterns
+]
+
+eqn: [
+| REPLACE LIST1 mult_pattern SEP "|" "=>" lconstr
+| WITH LIST1 [ LIST1 pattern100 SEP "," ] SEP "|" "=>" lconstr
+]
+
+universe_increment: [
+| OPTINREF
+]
+
+evar_instance: [
+| OPTINREF
+]
+
+(* No constructor syntax, OPT [ "|" binders ] is not supported for Record *)
+record_definition: [
+| opt_coercion ident_decl binders OPT [ ":" type ] OPT [ identref ] "{" record_fields "}"  decl_notations
+]
+
+(* No record syntax, opt_coercion not supported for Variant, := ... required *)
+variant_definition: [
+| ident_decl binders OPT [ "|" binders ] OPT [ ":" type ] ":=" OPT "|" LIST1 constructor SEP "|" decl_notations
+]
+
+gallina: [
+| REPLACE thm_token ident_decl binders ":" lconstr LIST0 [ "with" ident_decl binders ":" lconstr ]
+| WITH thm_token ident_decl binders ":" type LIST0 [ "with" ident_decl binders ":" type ]
+| DELETE assumptions_token inline assum_list
+| REPLACE finite_token LIST1 inductive_definition SEP "with"
+| WITH "Inductive" inductive_definition LIST0 ( "with" inductive_definition )
+|   "CoInductive" inductive_definition LIST0 ( "with" inductive_definition )
+|   "Variant" variant_definition LIST0 ( "with" variant_definition )
+|   [ "Record" | "Structure" ] record_definition LIST0 ( "with" record_definition )
+|   "Class" inductive_definition LIST0 ( "with" inductive_definition )
+| REPLACE "Fixpoint" LIST1 rec_definition SEP "with"
+| WITH "Fixpoint" rec_definition LIST0 ( "with" rec_definition )
+| REPLACE "Let" "Fixpoint" LIST1 rec_definition SEP "with"
+| WITH "Let" "Fixpoint" rec_definition LIST0 ( "with" rec_definition )
+| REPLACE "CoFixpoint" LIST1 corec_definition SEP "with"
+| WITH "CoFixpoint" corec_definition LIST0 ( "with" corec_definition )
+| REPLACE "Let" "CoFixpoint" LIST1 corec_definition SEP "with"
+| WITH "Let" "CoFixpoint" corec_definition LIST0 ( "with" corec_definition )
+| REPLACE "Scheme" LIST1 scheme SEP "with"
+| WITH "Scheme" scheme LIST0 ( "with" scheme )
+]
+
+finite_token: [
+| DELETENT
+]
+
+constructor_list_or_record_decl: [
+| OPTINREF
+]
+
+record_fields: [
+| REPLACE record_field ";" record_fields
+| WITH LIST0 record_field SEP ";"
+| DELETE record_field
+| DELETE (* empty *)
+]
+
+assumptions_token: [
+| DELETENT
+]
+
+inline: [
+| REPLACE "Inline" "(" natural ")"
+| WITH "Inline" OPT ( "(" natural ")" )
+| DELETE "Inline"
+| OPTINREF
+]
+
+univ_instance: [
+| OPTINREF
+]
+
+univ_decl: [
+| REPLACE "@{" LIST0 identref [ "+" | ]     [ "|" LIST0 univ_constraint SEP "," [ "+" | ] "}" | [ "}" | bar_cbrace ] ]
+| WITH    "@{" LIST0 identref  OPT "+"  OPT [ "|" LIST0 univ_constraint SEP "," OPT "+" ] "}"
+]
+
+of_type_with_opt_coercion: [
+| DELETENT
+]
+
+of_type_with_opt_coercion: [
+| [ ":" | ":>" | ":>>" ] type
+]
+
+attribute_value: [
+| OPTINREF
+]
+
+def_body: [
+| DELETE binders ":=" reduce lconstr
+| REPLACE binders ":" lconstr ":=" reduce lconstr
+| WITH LIST0 binder OPT (":" type) ":=" reduce lconstr
+| REPLACE binders ":" lconstr
+| WITH LIST0 binder ":" type
+]
+
+reduce: [
+| OPTINREF
+]
+
+occs: [
+| OPTINREF
+]
+
+delta_flag: [
+| REPLACE "-" "[" LIST1 smart_global "]"
+| WITH OPT "-" "[" LIST1 smart_global "]"
+| DELETE "[" LIST1 smart_global "]"
+| OPTINREF
+]
+
+strategy_flag: [
+| REPLACE OPT delta_flag
+| WITH delta_flag
+| (* empty *)
+| OPTINREF
+]
+
+filtered_import: [
+| REPLACE global "(" LIST1 one_import_filter_name SEP "," ")"
+| WITH global OPT [ "(" LIST1 one_import_filter_name SEP "," ")" ]
+| DELETE global
+]
+
+functor_app_annot: [
+| OPTINREF
+]
+
+is_module_expr: [
+| REPLACE ":=" module_expr_inl LIST0 ext_module_expr
+| WITH ":=" LIST1 module_expr_inl SEP "<+"
+| OPTINREF
+]
+
+is_module_type: [
+| REPLACE ":=" module_type_inl LIST0 ext_module_type
+| WITH ":=" LIST1 module_type_inl SEP "<+"
+| OPTINREF
+]
+
+gallina_ext: [
+| REPLACE "Arguments" smart_global LIST0 argument_spec_block OPT [ "," LIST1 [ LIST0 more_implicits_block ] SEP "," ] OPT [ ":" LIST1 arguments_modifier SEP "," ]
+| WITH "Arguments" smart_global LIST0 argument_spec_block    LIST0 [  "," LIST0 more_implicits_block ]                OPT [ ":" LIST1 arguments_modifier SEP "," ]
+| REPLACE "Implicit" "Type" reserv_list
+| WITH "Implicit" [ "Type" | "Types" ] reserv_list
+| DELETE "Implicit" "Types" reserv_list
+
+(* Per @Zimmi48, the global (qualid) must be a simple identifier if def_body is present
+   Note that smart_global is "qualid | by_notation" and that
+   ident_decl is "ident OPT univ_decl"; move
+ *)
+| REPLACE "Canonical" OPT "Structure" global OPT [ OPT univ_decl def_body ]
+| WITH "Canonical" OPT "Structure" ident_decl def_body
+| REPLACE "Canonical" OPT "Structure" by_notation
+| WITH "Canonical" OPT "Structure" smart_global
+
+| DELETE "Coercion" global ":" class_rawexpr ">->" class_rawexpr
+| REPLACE "Coercion" by_notation ":" class_rawexpr ">->" class_rawexpr
+| WITH "Coercion" smart_global ":" class_rawexpr ">->" class_rawexpr
+
+| REPLACE "Include" "Type" module_type_inl LIST0 ext_module_type
+| WITH "Include" "Type" LIST1 module_type_inl SEP "<+"
+
+| REPLACE "Generalizable" [ "All" "Variables" | "No" "Variables" | [ "Variable" | "Variables" ] LIST1 identref ]
+| WITH "Generalizable" [  [ "Variable" | "Variables" ] LIST1 identref | "All" "Variables" | "No" "Variables" ]
+
+(* don't show Export for Set, Unset *)
+| REPLACE "Export" "Set" option_table option_setting
+| WITH "Set" option_table option_setting
+| REPLACE "Export" "Unset" option_table
+| WITH "Unset" option_table
+| REPLACE "Instance" instance_name ":" operconstr200 hint_info [ ":=" "{" record_declaration "}" | ":=" lconstr | ]
+| WITH "Instance" instance_name ":" operconstr200 hint_info OPT [ ":=" "{" record_declaration "}" | ":=" lconstr ]
+
+| REPLACE "From" global "Require" export_token LIST1 global
+| WITH "From" dirpath "Require" export_token LIST1 global
+]
+
+export_token: [
+| OPTINREF
+]
+
+(* lexer stuff *)
+integer: [ | DELETENT ]
+RENAME: [
+| integer int (* todo: review uses in .mlg files, some should be "natural" *)
+]
+
+LEFTQMARK: [
+| "?"
+]
+
+digit: [
+| "0" ".." "9"
+]
+
+decnum: [
+| digit LIST0 [ digit | "_" ]
+]
+
+hexdigit: [
+| [ "0" ".." "9" | "a" ".." "f" | "A" ".." "F" ]
+]
+
+hexnum: [
+| [ "0x" | "0X" ] hexdigit LIST0 [ hexdigit | "_" ]
+]
+
+num: [
+| [ decnum | hexnum ]
+]
+
+natural: [ | DELETENT ]
+natural: [
+| num  (* todo: or should it be "nat"? *)
+]
+
+int: [
+| OPT "-" num
+]
+
+numeral: [
+| OPT "-" decnum OPT ( "." LIST1 [ digit | "_" ] ) OPT ( [ "e" | "E" ] OPT [ "+" | "-" ] decnum )
+| OPT "-" hexnum OPT ( "." LIST1 [ hexdigit | "_" ] ) OPT ( [ "p" | "P" ] OPT [ "+" | "-" ] decnum )
+]
+
+bigint: [
+| DELETE NUMERAL
+| num
+]
+
+first_letter: [
+| [ "a" ".." "z" | "A" ".." "Z" | "_" | unicode_letter ]
+]
+
+subsequent_letter: [
+| [ first_letter | digit | "'" | unicode_id_part ]
+]
+
+ident: [
+| DELETE IDENT
+| first_letter LIST0 subsequent_letter
+]
+
+NUMERAL: [
+| numeral
+]
+
+(* todo: QUOTATION only used in a test suite .mlg files, is it documented/useful? *)
+
+string: [ | DELETENT ]
+STRING: [
+| string
+]
+
+
+(* todo: is "bigint" useful?? *)
+(* todo: "check_int" in g_prim.mlg should be "check_num" *)
+
+  (* added productions *)
+
+command_entry: [
+| noedit_mode
+]
+
+DELETE: [
+| tactic_then_locality
+]
+
+tactic_expr5: [
+(* make these look consistent with use of binder_tactic in other tactic_expr* *)
+| DELETE binder_tactic
+| DELETE tactic_expr4
+| [ tactic_expr4 | binder_tactic ]
+]
+
+ltac_constructs: [
+(* repeated in main ltac grammar - need to create a COPY edit *)
+| tactic_expr3 ";" [ tactic_expr3 | binder_tactic ]
+| tactic_expr3 ";" "[" tactic_then_gen "]"
+
+| tactic_expr1 "+" [ tactic_expr2 | binder_tactic ]
+| tactic_expr1 "||" [ tactic_expr2 | binder_tactic ]
+
+(* | qualid LIST0 tactic_arg  add later due renaming tactic_arg *)
+
+| "[>" tactic_then_gen "]"
+| toplevel_selector tactic_expr5
+]
+
+tactic_expr4: [
+| REPLACE tactic_expr3 ";" tactic_then_gen "]"
+| WITH tactic_expr3 ";" "[" tactic_then_gen "]"
+| REPLACE tactic_expr3 ";" binder_tactic
+| WITH tactic_expr3 ";" [ tactic_expr3 | binder_tactic ]
+| DELETE tactic_expr3 ";" tactic_expr3
+]
+
+l3_tactic: [ ]
+
+tactic_expr3: [
+| DELETE "abstract" tactic_expr2
+| REPLACE "abstract" tactic_expr2 "using" ident
+| WITH "abstract" tactic_expr2 OPT ( "using" ident )
+| l3_tactic
+| MOVEALLBUT ltac_builtins
+| l3_tactic
+| tactic_expr2
+]
+
+l2_tactic: [ ]
+
+tactic_expr2: [
+| REPLACE tactic_expr1 "+" binder_tactic
+| WITH tactic_expr1 "+"  [ tactic_expr2 | binder_tactic ]
+| DELETE tactic_expr1 "+" tactic_expr2
+| REPLACE tactic_expr1 "||" binder_tactic
+| WITH tactic_expr1 "||" [ tactic_expr2 | binder_tactic ]
+| DELETE tactic_expr1 "||" tactic_expr2
+| MOVETO ltac_builtins "tryif" tactic_expr5 "then" tactic_expr5 "else" tactic_expr2
+| l2_tactic
+| DELETE ltac_builtins
+]
+
+l1_tactic: [ ]
+
+tactic_expr1: [
+| EDIT match_key ADD_OPT "reverse" "goal" "with" match_context_list "end"
+| MOVETO simple_tactic match_key OPT "reverse" "goal" "with" match_context_list "end"
+| MOVETO simple_tactic match_key tactic_expr5 "with" match_list "end"
+| REPLACE failkw [ int_or_var | ] LIST0 message_token
+| WITH failkw OPT int_or_var LIST0 message_token
+| REPLACE reference LIST0 tactic_arg_compat
+| WITH reference LIST1 tactic_arg_compat
+| l1_tactic
+| DELETE simple_tactic
+| MOVEALLBUT ltac_builtins
+| l1_tactic
+| tactic_arg
+| reference LIST1 tactic_arg_compat
+| tactic_expr0
+]
+
+(* split match_context_rule *)
+goal_pattern: [
+| LIST0 match_hyps SEP "," "|-" match_pattern
+| "[" LIST0 match_hyps SEP "," "|-" match_pattern "]"
+| "_"
+]
+
+match_context_rule: [
+| DELETE LIST0 match_hyps SEP "," "|-" match_pattern "=>" tactic_expr5
+| DELETE "[" LIST0 match_hyps SEP "," "|-" match_pattern "]" "=>" tactic_expr5
+| DELETE "_" "=>" tactic_expr5
+| goal_pattern "=>" tactic_expr5
+]
+
+match_context_list: [
+| EDIT ADD_OPT "|" LIST1 match_context_rule SEP "|"
+]
+
+match_list: [
+| EDIT ADD_OPT "|" LIST1 match_rule SEP "|"
+]
+
+match_rule: [
+(* redundant; match_pattern -> term -> _ *)
+| DELETE "_" "=>" tactic_expr5
+]
+
+selector_body: [
+| REPLACE range_selector_or_nth  (* depends on whether range_selector_or_nth is deleted first *)
+| WITH LIST1 range_selector SEP ","
+]
+
+range_selector_or_nth: [ | DELETENT ]
+
+firstorder_rhs: [
+| firstorder_using
+| "with" LIST1 preident
+| firstorder_using "with" LIST1 preident
+]
+
+where: [
+| "at" "top"
+| "at" "bottom"
+| "after" ident
+| "before" ident
+]
+
+simple_tactic: [
+| DELETE "intros"
+| REPLACE "intros" ne_intropatterns
+| WITH "intros" intropatterns
+| DELETE "eintros"
+| REPLACE "eintros" ne_intropatterns
+| WITH "eintros" intropatterns
+| DELETE "autorewrite" "with" LIST1 preident clause
+| DELETE "autorewrite" "with" LIST1 preident clause "using" tactic
+| DELETE "autorewrite" "*" "with" LIST1 preident clause
+| REPLACE "autorewrite" "*" "with" LIST1 preident clause "using" tactic
+| WITH "autorewrite" OPT "*" "with" LIST1 preident clause_dft_concl OPT ( "using" tactic )
+| DELETE "cofix" ident
+| REPLACE "cofix" ident "with" LIST1 cofixdecl
+| WITH "cofix" ident OPT ( "with" LIST1 cofixdecl )
+| DELETE "constructor"
+| DELETE "constructor" int_or_var
+| REPLACE "constructor" int_or_var "with" bindings
+| WITH "constructor" OPT int_or_var OPT ( "with" bindings )
+| DELETE "econstructor"
+| DELETE "econstructor" int_or_var
+| REPLACE "econstructor" int_or_var "with" bindings
+| WITH "econstructor" OPT ( int_or_var OPT ( "with" bindings ) )
+| DELETE "dependent" "rewrite" orient constr
+| REPLACE "dependent" "rewrite" orient constr "in" hyp
+| WITH "dependent" "rewrite" orient constr OPT ( "in" hyp )
+| "firstorder" OPT tactic firstorder_rhs
+| DELETE "firstorder" OPT tactic firstorder_using
+| DELETE "firstorder" OPT tactic "with" LIST1 preident
+| DELETE "firstorder" OPT tactic firstorder_using "with" LIST1 preident
+| DELETE "fix" ident natural
+| REPLACE "fix" ident natural "with" LIST1 fixdecl
+| WITH "fix" ident natural OPT ( "with" LIST1 fixdecl )
+| DELETE "generalize" constr
+| REPLACE "generalize" constr LIST1 constr
+| WITH "generalize" constr OPT ( LIST1 constr )
+| EDIT "simplify_eq" ADD_OPT destruction_arg
+| EDIT "esimplify_eq" ADD_OPT destruction_arg
+| EDIT "discriminate" ADD_OPT destruction_arg
+| EDIT "ediscriminate" ADD_OPT destruction_arg
+| DELETE "injection"
+| DELETE "injection" destruction_arg
+| DELETE "injection" "as" LIST0 simple_intropattern
+| REPLACE "injection" destruction_arg "as" LIST0 simple_intropattern
+| WITH "injection" OPT destruction_arg OPT ( "as" LIST0 simple_intropattern )
+| DELETE "einjection"
+| DELETE "einjection" destruction_arg
+| DELETE "einjection" "as" LIST0 simple_intropattern
+| REPLACE "einjection" destruction_arg "as" LIST0 simple_intropattern
+| WITH "einjection" OPT destruction_arg OPT ( "as" LIST0 simple_intropattern )
+| EDIT "simple" "injection" ADD_OPT destruction_arg
+| DELETE "intro"  (* todo: change the mlg to simplify! *)
+| DELETE "intro" ident
+| DELETE "intro" ident "at" "top"
+| DELETE "intro" ident "at" "bottom"
+| DELETE "intro" ident "after" hyp
+| DELETE "intro" ident "before" hyp
+| DELETE "intro" "at" "top"
+| DELETE "intro" "at" "bottom"
+| DELETE "intro" "after" hyp
+| DELETE "intro" "before" hyp
+| "intro" OPT ident OPT where
+| DELETE "move" hyp "at" "top"
+| DELETE "move" hyp "at" "bottom"
+| DELETE "move" hyp "after" hyp
+| DELETE "move" hyp "before" hyp
+| "move" ident OPT where
+| DELETE "replace" "->" uconstr clause
+| DELETE "replace" "<-" uconstr clause
+| DELETE "replace" uconstr clause
+| "replace" orient uconstr clause_dft_concl   (* todo: fix 'clause' *)
+| REPLACE "rewrite" "*" orient uconstr "in" hyp "at" occurrences by_arg_tac
+| WITH "rewrite" "*" orient uconstr OPT ( "in" hyp ) OPT ( "at" occurrences by_arg_tac )
+| DELETE "rewrite" "*" orient uconstr "in" hyp by_arg_tac
+| DELETE "rewrite" "*" orient uconstr "at" occurrences by_arg_tac
+| DELETE "rewrite" "*" orient uconstr by_arg_tac
+| DELETE "setoid_rewrite" orient glob_constr_with_bindings
+| DELETE "setoid_rewrite" orient glob_constr_with_bindings "in" hyp
+| DELETE "setoid_rewrite" orient glob_constr_with_bindings "at" occurrences
+| REPLACE "setoid_rewrite" orient glob_constr_with_bindings "at" occurrences "in" hyp
+| WITH "setoid_rewrite" orient glob_constr_with_bindings OPT ( "at" occurrences ) OPT ( "in" hyp )
+| REPLACE "stepl" constr "by" tactic
+| WITH "stepl" constr OPT ( "by" tactic )
+| DELETE "stepl" constr
+| REPLACE "stepr" constr "by" tactic
+| WITH "stepr" constr OPT ( "by" tactic )
+| DELETE "stepr" constr
+| DELETE "unify" constr constr
+| REPLACE "unify" constr constr "with" preident
+| WITH "unify" constr constr OPT ( "with" preident )
+| DELETE "cutrewrite" orient constr
+| REPLACE "cutrewrite" orient constr "in" hyp
+| WITH "cutrewrite" orient constr OPT ( "in" hyp )
+| DELETE "destauto"
+| REPLACE "destauto" "in" hyp
+| WITH "destauto" OPT ( "in" hyp )
+| REPLACE "autounfold_one" hintbases "in" hyp
+| WITH "autounfold_one" hintbases OPT ( "in" hyp )
+| DELETE "autounfold_one" hintbases
+| REPLACE "rewrite_db" preident "in" hyp
+| WITH "rewrite_db" preident OPT ( "in" hyp )
+| DELETE "rewrite_db" preident
+| DELETE "setoid_symmetry"
+| REPLACE "setoid_symmetry" "in" hyp
+| WITH "setoid_symmetry" OPT ( "in" hyp )
+| REPLACE "rewrite_strat" rewstrategy "in" hyp
+| WITH "rewrite_strat" rewstrategy OPT ( "in" hyp )
+| DELETE "rewrite_strat" rewstrategy
+| REPLACE "protect_fv" string "in" ident
+| WITH "protect_fv" string OPT ( "in" ident )
+| DELETE "protect_fv" string
+| DELETE "symmetry"
+| REPLACE "symmetry" "in" in_clause
+| WITH "symmetry" OPT ( "in" in_clause )
+| DELETE "split"
+| REPLACE "split" "with" bindings
+| WITH  "split" OPT ( "with" bindings )
+| DELETE "esplit"
+| REPLACE "esplit" "with" bindings
+| WITH "esplit" OPT ( "with" bindings )
+| DELETE "specialize" constr_with_bindings
+| REPLACE "specialize" constr_with_bindings "as" simple_intropattern
+| WITH "specialize" constr_with_bindings OPT ( "as" simple_intropattern )
+| DELETE "exists"
+| REPLACE "exists" LIST1 bindings SEP ","
+| WITH "exists" OPT ( LIST1 bindings SEP "," )
+| DELETE "eexists"
+| REPLACE "eexists" LIST1 bindings SEP ","
+| WITH "eexists" OPT ( LIST1 bindings SEP "," )
+| DELETE "left"
+| REPLACE "left" "with" bindings
+| WITH "left" OPT ( "with" bindings )
+| DELETE "eleft"
+| REPLACE "eleft" "with" bindings
+| WITH "eleft" OPT ( "with" bindings )
+| DELETE "right"
+| REPLACE "right" "with" bindings
+| WITH "right" OPT ( "with" bindings )
+| DELETE "eright"
+| REPLACE "eright" "with" bindings
+| WITH "eright" OPT ( "with" bindings )
+| DELETE "finish_timing" OPT string
+| REPLACE "finish_timing" "(" string ")" OPT string
+| WITH "finish_timing" OPT ( "(" string ")" ) OPT string
+| REPLACE "hresolve_core" "(" ident ":=" constr ")" "at" int_or_var "in" constr
+| WITH "hresolve_core" "(" ident ":=" constr ")" OPT ( "at" int_or_var ) "in" constr
+| DELETE "hresolve_core" "(" ident ":=" constr ")" "in" constr
+| EDIT "psatz_R" ADD_OPT int_or_var tactic
+| EDIT "psatz_Q" ADD_OPT int_or_var tactic
+| EDIT "psatz_Z" ADD_OPT int_or_var tactic
+| REPLACE "subst" LIST1 var
+| WITH "subst" OPT ( LIST1 var )
+| DELETE "subst"
+| DELETE "congruence"
+| DELETE "congruence" int
+| DELETE "congruence" "with" LIST1 constr
+| REPLACE "congruence" int "with" LIST1 constr
+| WITH "congruence" OPT int OPT ( "with" LIST1 constr )
+| DELETE "show" "ltac" "profile"
+| REPLACE "show" "ltac" "profile" "cutoff" int
+| WITH "show" "ltac" "profile" OPT [ "cutoff" int | string ]
+| DELETE "show" "ltac" "profile" string
+(* perversely, the mlg uses "tactic3" instead of "tactic_expr3" *)
+| DELETE "transparent_abstract" tactic3
+| REPLACE "transparent_abstract" tactic3 "using" ident
+| WITH "transparent_abstract" tactic_expr3 OPT ( "using" ident )
+]
+
+(* todo: don't use DELETENT for this *)
+ne_intropatterns: [ | DELETENT ]
+
+
+or_and_intropattern: [
+| DELETE "()"
+| DELETE "(" simple_intropattern ")"
+| REPLACE "(" simple_intropattern "," LIST1 simple_intropattern SEP "," ")"
+|   WITH  "(" LIST0 simple_intropattern SEP "," ")"
+| EDIT "[" USE_NT intropattern_or LIST1 intropatterns SEP "|" "]"
+]
+
+bar_cbrace: [
+| REPLACE "|" "}"
+| WITH "|}"
+]
+
+printable: [
+| REPLACE "Scope" IDENT
+| WITH "Scope" scope_name
+| REPLACE "Visibility" OPT IDENT
+| WITH "Visibility" OPT scope_name
+| REPLACE [ "Sorted" | ] "Universes" OPT printunivs_subgraph OPT ne_string
+| WITH OPT "Sorted" "Universes" OPT printunivs_subgraph OPT ne_string
+| DELETE "Term" smart_global OPT univ_name_list  (* readded in commands *)
+
+| INSERTALL "Print"
+]
+
+command: [
+| REPLACE "Print" printable
+| WITH printable
+| "SubClass" ident_decl def_body
+| REPLACE "Ltac" LIST1 ltac_tacdef_body SEP "with"
+| WITH "Ltac" ltac_tacdef_body LIST0 ( "with" ltac_tacdef_body )
+| REPLACE "Function" LIST1 function_rec_definition_loc SEP "with"      (* funind plugin *)
+| WITH "Function" function_rec_definition_loc LIST0 ( "with" function_rec_definition_loc )      (* funind plugin *)
+| REPLACE "Functional" "Scheme" LIST1 fun_scheme_arg SEP "with"      (* funind plugin *)
+| WITH "Functional" "Scheme" fun_scheme_arg LIST0 ( "with" fun_scheme_arg )      (* funind plugin *)
+| DELETE "Cd"
+| REPLACE "Cd" ne_string
+| WITH "Cd" OPT ne_string
+| DELETE "Back"
+| REPLACE "Back" natural
+| WITH "Back" OPT natural
+| REPLACE "Load" [ "Verbose" | ] [ ne_string | IDENT ]
+| WITH "Load" OPT "Verbose" [ ne_string | IDENT ]
+| DELETE "Unset" option_table
+| REPLACE "Set" option_table option_setting
+| WITH OPT "Export" "Set" option_table   (* set flag *)
+| REPLACE "Test" option_table "for" LIST1 table_value
+| WITH "Test" option_table OPT ( "for" LIST1 table_value )
+| DELETE "Test" option_table
+
+(* hide the fact that table names are limited to 2 IDENTs *)
+| REPLACE "Add" IDENT IDENT LIST1 table_value
+| WITH "Add" option_table LIST1 table_value
+| DELETE "Add" IDENT LIST1 table_value
+| DELETE "Add" "Parametric" "Relation" binders ":" constr constr "reflexivity" "proved" "by" constr "symmetry" "proved" "by" constr "as" ident
+| DELETE "Add" "Parametric" "Relation" binders ":" constr constr "reflexivity" "proved" "by" constr "as" ident
+| DELETE "Add" "Parametric" "Relation" binders ":" constr constr "reflexivity" "proved" "by" constr "transitivity" "proved" "by" constr "as" ident
+| DELETE "Add" "Parametric" "Relation" binders ":" constr constr "reflexivity" "proved" "by" constr "symmetry" "proved" "by" constr "transitivity" "proved" "by" constr "as" ident
+| DELETE "Add" "Parametric" "Relation" binders ":" constr constr "symmetry" "proved" "by" constr "as" ident
+| DELETE "Add" "Parametric" "Relation" binders ":" constr constr "symmetry" "proved" "by" constr "transitivity" "proved" "by" constr "as" ident
+| DELETE "Add" "Parametric" "Relation" binders ":" constr constr "transitivity" "proved" "by" constr "as" ident
+| DELETE "Add" "Parametric" "Relation" binders ":" constr constr "as" ident
+| "Add" "Parametric" "Relation" binders ":" constr constr OPT ( "reflexivity" "proved" "by" constr ) OPT ( "symmetry" "proved" "by" constr ) OPT ("transitivity" "proved" "by" constr ) "as" ident
+| DELETE "Add" "Relation" constr constr "reflexivity" "proved" "by" constr "symmetry" "proved" "by" constr "as" ident
+| DELETE "Add" "Relation" constr constr "reflexivity" "proved" "by" constr "as" ident
+| DELETE "Add" "Relation" constr constr "as" ident
+| DELETE "Add" "Relation" constr constr "symmetry" "proved" "by" constr "as" ident
+| DELETE "Add" "Relation" constr constr "symmetry" "proved" "by" constr "transitivity" "proved" "by" constr "as" ident
+| DELETE "Add" "Relation" constr constr "reflexivity" "proved" "by" constr "transitivity" "proved" "by" constr "as" ident
+| DELETE "Add" "Relation" constr constr "reflexivity" "proved" "by" constr "symmetry" "proved" "by" constr "transitivity" "proved" "by" constr "as" ident
+| DELETE "Add" "Relation" constr constr "transitivity" "proved" "by" constr "as" ident
+| "Add" "Relation" constr constr OPT ( "reflexivity" "proved" "by" constr ) OPT ( "symmetry" "proved" "by" constr ) OPT ( "transitivity" "proved" "by" constr ) "as" ident
+| REPLACE "Admit" "Obligations" "of" ident
+| WITH "Admit" "Obligations" OPT ( "of" ident )
+| DELETE "Admit" "Obligations"
+| REPLACE "Create" "HintDb" IDENT; [ "discriminated" | ]
+| WITH "Create" "HintDb" IDENT; OPT "discriminated"
+| DELETE "Debug" "On"
+| REPLACE "Debug" "Off"
+| WITH "Debug" [ "On" | "Off" ]
+| EDIT "Defined" ADD_OPT identref
+| REPLACE "Derive" "Inversion" ident "with" constr "Sort" sort_family
+| WITH "Derive" "Inversion" ident "with" constr OPT ( "Sort" sort_family )
+| DELETE "Derive" "Inversion" ident "with" constr
+| REPLACE "Derive" "Inversion_clear" ident "with" constr "Sort" sort_family
+| WITH "Derive" "Inversion_clear" ident "with" constr OPT ( "Sort" sort_family )
+| DELETE "Derive" "Inversion_clear" ident "with" constr
+| EDIT "Focus" ADD_OPT natural
+| DELETE "Hint" "Rewrite" orient LIST1 constr ":" LIST0 preident
+| REPLACE "Hint" "Rewrite" orient LIST1 constr "using" tactic ":" LIST0 preident
+| WITH "Hint" "Rewrite" orient LIST1 constr OPT ( "using" tactic ) OPT ( ":" LIST0 preident )
+| DELETE "Hint" "Rewrite" orient LIST1 constr
+| DELETE "Hint" "Rewrite" orient LIST1 constr "using" tactic
+| REPLACE "Next" "Obligation" "of" ident withtac
+| WITH "Next" "Obligation" OPT ( "of" ident ) withtac
+| DELETE "Next" "Obligation" withtac
+| REPLACE "Obligation" int "of" ident ":" lglob withtac
+| WITH "Obligation" int OPT ( "of" ident ) OPT ( ":" lglob withtac )
+| DELETE "Obligation" int "of" ident withtac
+| DELETE "Obligation" int ":" lglob withtac
+| DELETE "Obligation" int withtac
+| REPLACE "Obligations" "of" ident
+| WITH "Obligations" OPT ( "of" ident )
+| DELETE "Obligations"
+| REPLACE "Preterm" "of" ident
+| WITH "Preterm" OPT ( "of" ident )
+| DELETE "Preterm"
+
+(* hide the fact that table names are limited to 2 IDENTs *)
+| REPLACE "Remove" IDENT IDENT LIST1 table_value
+| WITH "Remove" option_table LIST1 table_value
+| DELETE "Remove" IDENT LIST1 table_value
+| DELETE "Restore" "State" IDENT
+| DELETE "Restore" "State" ne_string
+| "Restore" "State" [ IDENT | ne_string ]
+| DELETE "Show"
+| DELETE "Show" natural
+| DELETE "Show" ident
+| "Show" OPT [ ident | natural ]
+| DELETE "Show" "Ltac" "Profile"
+| REPLACE "Show" "Ltac" "Profile" "CutOff" int
+| WITH "Show" "Ltac" "Profile" OPT [ "CutOff" int | string ]
+| DELETE "Show" "Ltac" "Profile" string
+| DELETE "Show" "Proof"  (* combined with Show Proof Diffs in vernac_toplevel *)
+| REPLACE "Solve" "All" "Obligations" "with" tactic
+| WITH "Solve" "All" "Obligations" OPT ( "with" tactic )
+| DELETE "Solve" "All" "Obligations"
+| REPLACE "Solve" "Obligation" int "of" ident "with" tactic
+| WITH "Solve" "Obligation" int OPT ( "of" ident ) "with" tactic
+| DELETE "Solve" "Obligations"
+| DELETE "Solve" "Obligation" int "with" tactic
+| REPLACE "Solve" "Obligations" "of" ident "with" tactic
+| WITH "Solve" "Obligations" OPT ( OPT ( "of" ident ) "with" tactic )
+| DELETE "Solve" "Obligations" "with" tactic
+| DELETE "Undo"
+| DELETE "Undo" natural
+| REPLACE "Undo" "To" natural
+| WITH "Undo" OPT ( OPT "To" natural )
+| DELETE "Write" "State" IDENT
+| REPLACE "Write" "State" ne_string
+| WITH "Write" "State" [ IDENT | ne_string ]
+| DELETE "Abort"
+| DELETE "Abort" "All"
+| REPLACE "Abort" identref
+| WITH "Abort" OPT [ "All" | identref ]
+
+(* show the locate options as separate commands *)
+| DELETE "Locate" locatable
+| locatable
+| REPLACE "Print" smart_global OPT univ_name_list
+| WITH "Print" OPT "Term" smart_global OPT univ_name_list
+
+| REPLACE "Declare" "Scope" IDENT
+| WITH "Declare" "Scope" scope_name
+
+(* odd that these are in command while other notation-related ones are in syntax *)
+| REPLACE "Numeral" "Notation" reference reference reference ":" ident numnotoption
+| WITH "Numeral" "Notation" reference reference reference ":" scope_name numnotoption
+| REPLACE "String" "Notation" reference reference reference ":" ident
+| WITH "String" "Notation" reference reference reference ":" scope_name
+
+]
+
+option_setting: [
+| OPTINREF
+]
+
+syntax: [
+| REPLACE "Open" "Scope" IDENT
+| WITH "Open" "Scope" scope
+| REPLACE "Close" "Scope" IDENT
+| WITH "Close" "Scope" scope
+| REPLACE "Delimit" "Scope" IDENT; "with" IDENT
+| WITH "Delimit" "Scope" scope_name; "with" scope_key
+| REPLACE "Undelimit" "Scope" IDENT
+| WITH "Undelimit" "Scope" scope_name
+| REPLACE "Bind" "Scope" IDENT; "with" LIST1 class_rawexpr
+| WITH "Bind" "Scope" scope_name; "with" LIST1 class_rawexpr
+| REPLACE "Infix" ne_lstring ":=" constr [ "(" LIST1 syntax_modifier SEP "," ")" | ]   OPT [ ":" IDENT ]
+| WITH    "Infix" ne_lstring ":=" constr OPT [ "(" LIST1 syntax_modifier SEP "," ")" ] OPT [ ":" scope_name ]
+| REPLACE "Notation" lstring ":=" constr [ "(" LIST1 syntax_modifier SEP "," ")" | ]   OPT [ ":" IDENT ]
+| WITH    "Notation" lstring ":=" constr OPT [ "(" LIST1 syntax_modifier SEP "," ")" ] OPT [ ":" scope_name ]
+| REPLACE "Reserved" "Infix" ne_lstring [ "(" LIST1 syntax_modifier SEP "," ")" | ]
+| WITH    "Reserved" "Infix" ne_lstring OPT [ "(" LIST1 syntax_modifier SEP "," ")" ]
+| REPLACE "Reserved" "Notation" ne_lstring [ "(" LIST1 syntax_modifier SEP "," ")" | ]
+| WITH    "Reserved" "Notation" ne_lstring OPT [ "(" LIST1 syntax_modifier SEP "," ")" ]
+]
+
+syntax_modifier: [
+| DELETE "in" "custom" IDENT
+| REPLACE "in" "custom" IDENT; "at" "level" natural
+| WITH "in" "custom" IDENT OPT ( "at" "level" natural )
+| REPLACE IDENT; "," LIST1 IDENT SEP "," "at" level
+| WITH LIST1 IDENT SEP "," "at" level
+]
+
+syntax_extension_type: [
+| REPLACE "strict" "pattern" "at" "level" natural
+| WITH "strict" "pattern" OPT ( "at" "level" natural )
+| DELETE "strict" "pattern"
+| DELETE "pattern"
+| REPLACE "pattern" "at" "level" natural
+| WITH "pattern" OPT ( "at" "level" natural )
+| DELETE "constr"    (* covered by another prod *)
+]
+
+numnotoption: [
+| OPTINREF
+]
+
+binder_tactic: [
+| REPLACE "let" [ "rec" | ] LIST1 let_clause SEP "with" "in" tactic_expr5
+| WITH "let" OPT "rec" let_clause LIST0 ( "with" let_clause ) "in" tactic_expr5
+| MOVEALLBUT ltac_builtins
+]
+
+record_binder_body: [
+| REPLACE binders of_type_with_opt_coercion lconstr
+| WITH binders of_type_with_opt_coercion
+| REPLACE binders of_type_with_opt_coercion lconstr ":=" lconstr
+| WITH binders of_type_with_opt_coercion ":=" lconstr
+]
+
+simple_assum_coe: [
+| REPLACE LIST1 ident_decl of_type_with_opt_coercion lconstr
+| WITH LIST1 ident_decl of_type_with_opt_coercion
+]
+
+constructor_type: [
+| REPLACE binders [ of_type_with_opt_coercion lconstr | ]
+| WITH binders OPT of_type_with_opt_coercion
+]
+
+(* todo: is this really correct? Search for "Pvernac.register_proof_mode" *)
+(* consider tactic_command vs tac2mode *)
+vernac_aux: [
+| tactic_mode "."
+]
+
+def_token: [
+| DELETE "SubClass" (* document separately from Definition and Example *)
+]
+
+assumption_token: [
+| REPLACE "Axiom"
+| WITH [ "Axiom" | "Axioms" ]
+| REPLACE "Conjecture"
+| WITH [ "Conjecture" | "Conjectures" ]
+| REPLACE "Hypothesis"
+| WITH [ "Hypothesis" | "Hypotheses" ]
+| REPLACE "Parameter"
+| WITH [ "Parameter" | "Parameters" ]
+| REPLACE "Variable"
+| WITH [ "Variable" | "Variables" ]
+]
+
+attributes: [
+| LIST0 ( "#[" LIST0 attribute SEP "," "]" ) LIST0 legacy_attr
+]
+
+legacy_attr: [
+| REPLACE "Local"
+| WITH [ "Local" | "Global" ]
+| DELETE "Global"
+| REPLACE "Polymorphic"
+| WITH [ "Polymorphic" | "Monomorphic" ]
+| DELETE "Monomorphic"
+| REPLACE "Cumulative"
+| WITH [ "Cumulative" | "NonCumulative" ]
+| DELETE "NonCumulative"
+]
+
+sentence: [ ]  (* productions defined below *)
+
+rec_definition: [
+| REPLACE ident_decl binders_fixannot type_cstr OPT [ ":=" lconstr ] decl_notations
+| WITH ident_decl binders_fixannot type_cstr OPT [ ":=" lconstr ] decl_notations
+]
+
+corec_definition: [
+| REPLACE ident_decl binders type_cstr OPT [ ":=" lconstr ] decl_notations
+| WITH ident_decl binders type_cstr OPT [ ":=" lconstr ] decl_notations
+]
+
+type_cstr: [
+| REPLACE ":" lconstr
+| WITH ":" type
+| OPTINREF
+]
+
+inductive_definition: [
+| REPLACE opt_coercion ident_decl binders OPT [ "|" binders ] OPT [ ":" lconstr ] opt_constructors_or_fields decl_notations
+| WITH opt_coercion ident_decl binders OPT [ "|" binders ] OPT [ ":" type ] opt_constructors_or_fields decl_notations
+]
+
+(* note that constructor -> identref constructor_type *)
+constructor_list_or_record_decl: [
+| DELETE "|" LIST1 constructor SEP "|"
+| REPLACE identref constructor_type "|" LIST1 constructor SEP "|"
+| WITH OPT "|" LIST1 constructor SEP "|"
+| DELETE identref constructor_type
+| REPLACE identref "{" record_fields "}"
+| WITH OPT identref "{" record_fields "}"
+| DELETE "{" record_fields "}"
+]
+
+record_binder: [
+| REPLACE name record_binder_body
+| WITH name OPT record_binder_body
+| DELETE name
+]
+
+at_level_opt: [
+| OPTINREF
+]
+
+query_command: [
+| REPLACE "Eval" red_expr "in" lconstr "."
+| WITH "Eval" red_expr "in" lconstr
+| REPLACE "Compute" lconstr "."
+| WITH "Compute" lconstr
+| REPLACE "Check" lconstr "."
+| WITH "Check" lconstr
+| REPLACE "About" smart_global OPT univ_name_list "."
+| WITH "About" smart_global OPT univ_name_list
+| REPLACE "SearchHead" constr_pattern in_or_out_modules "."
+| WITH "SearchHead" constr_pattern in_or_out_modules
+| REPLACE "SearchPattern" constr_pattern in_or_out_modules "."
+| WITH "SearchPattern" constr_pattern in_or_out_modules
+| REPLACE "SearchRewrite" constr_pattern in_or_out_modules "."
+| WITH "SearchRewrite" constr_pattern in_or_out_modules
+| REPLACE "Search" search_query search_queries "."
+| WITH "Search" search_queries
+]
+
+vernac_toplevel: [
+(* note these commands can't be referenced by vernac_control commands *)
+| REPLACE "Drop" "."
+| WITH "Drop"
+| REPLACE "Quit" "."
+| WITH "Quit"
+| REPLACE "BackTo" natural "."
+| WITH "BackTo" natural
+| REPLACE "Show" "Goal" natural "at" natural "."
+| WITH "Show" "Goal" natural "at" natural
+| REPLACE "Show" "Proof" "Diffs" OPT "removed" "."
+| WITH "Show" "Proof" OPT ( "Diffs" OPT "removed" )
+| DELETE vernac_control
+]
+
+in_or_out_modules: [
+| OPTINREF
+]
+
+vernac_control: [
+(* replacing vernac_control with command is cheating a little;
+   they can't refer to the vernac_toplevel commands.
+   cover this the descriptions of these commands *)
+| REPLACE "Time" vernac_control
+| WITH "Time" sentence
+| REPLACE "Redirect" ne_string vernac_control
+| WITH "Redirect" ne_string sentence
+| REPLACE "Timeout" natural vernac_control
+| WITH "Timeout" natural sentence
+| REPLACE "Fail" vernac_control
+| WITH "Fail" sentence
+| DELETE decorated_vernac
+]
+
+orient: [
+| OPTINREF
+]
+
+in_hyp_as: [
+| OPTINREF
+]
+
+as_name: [
+| OPTINREF
+]
+
+hloc: [
+| OPTINREF
+]
+
+as_or_and_ipat: [
+| OPTINREF
+]
+
+hintbases: [
+| OPTINREF
+]
+
+as_ipat: [
+| OPTINREF
+]
+
+auto_using: [
+| OPTINREF
+]
+
+with_bindings: [
+| OPTINREF
+]
+
+eqn_ipat: [
+| OPTINREF
+]
+
+withtac: [
+| OPTINREF
+]
+
+of_module_type: [
+| (* empty *)
+| OPTINREF
+]
+
+
+clause_dft_all: [
+| OPTINREF
+]
+
+opt_clause: [
+| OPTINREF
+]
+
+with_names: [
+| OPTINREF
+]
+
+in_hyp_list: [
+| OPTINREF
+]
+
+struct_annot: [
+| OPTINREF
+]
+
+firstorder_using: [
+| OPTINREF
+]
+
+fun_ind_using: [
+| OPTINREF
+]
+
+by_arg_tac: [
+| OPTINREF
+]
+
+by_tactic: [
+| OPTINREF
+]
+
+rewriter: [
+| REPLACE [ "?" | LEFTQMARK ] constr_with_bindings_arg
+| WITH "?" constr_with_bindings_arg
+]
+
+intropattern_or_list_or: [
+(* todo: where does intropattern_or_list_or come from?? *)
+| REPLACE intropattern_or_list_or "|" intropatterns
+| WITH LIST0 intropattern LIST0 ( "|" intropatterns )
+| DELETE intropatterns
+]
+
+record_declaration: [
+| DELETE fields_def
+| LIST0 field_def
+]
+
+fields_def: [ | DELETENT ]
+
+hint_info: [
+| OPTINREF
+]
+
+debug: [
+| OPTINREF
+]
+
+eauto_search_strategy: [
+| OPTINREF
+]
+
+
+constr_body: [
+| DELETE ":=" lconstr
+| REPLACE ":" lconstr ":=" lconstr
+| WITH OPT ( ":" lconstr ) ":=" lconstr
+]
+
+opt_hintbases: [
+| OPTINREF
+]
+
+opthints: [
+| OPTINREF
+]
+
+scheme: [
+| DELETE scheme_kind
+| REPLACE identref ":=" scheme_kind
+| WITH OPT ( identref ":=" ) scheme_kind
+]
+
+instance_name: [
+| OPTINREF
+]
+
+simple_reserv: [
+| REPLACE LIST1 identref ":" lconstr
+| WITH LIST1 identref ":" type
+]
+
+in_clause: [
+| DELETE in_clause'
+| REPLACE LIST0 hypident_occ SEP "," "|-" concl_occ
+| WITH LIST0 hypident_occ SEP "," OPT ( "|-" concl_occ )
+| DELETE LIST0 hypident_occ SEP ","
+]
+
+concl_occ: [
+| OPTINREF
+]
+
+opt_coercion: [
+| OPTINREF
+]
+
+opt_constructors_or_fields: [
+| OPTINREF
+]
+
+decl_notations: [
+| REPLACE "where" LIST1 decl_notation SEP decl_sep
+| WITH "where" decl_notation LIST0 (decl_sep decl_notation )
+| OPTINREF
+]
+
+module_expr: [
+| REPLACE module_expr_atom
+| WITH LIST1 module_expr_atom
+| DELETE module_expr module_expr_atom
+]
+
+locatable: [
+| INSERTALL "Locate"
+]
+
+ne_in_or_out_modules: [
+| REPLACE "inside" LIST1 global
+| WITH [ "inside" | "outside" ] LIST1 global
+| DELETE "outside" LIST1 global
+]
+
+search_queries: [
+| DELETE ne_in_or_out_modules
+| REPLACE search_query search_queries
+| WITH LIST1 ( search_query ) OPT ne_in_or_out_modules
+| DELETE (* empty *)
+]
+
+positive_search_mark: [
+| OPTINREF
+]
+
+SPLICE: [
+| positive_search_mark
+]
+
+search_query: [
+| REPLACE OPT "-" search_item
+| WITH search_item
+| "-" search_query
+| REPLACE OPT "-" "[" LIST1 ( LIST1 search_query ) SEP "|" "]"
+| WITH "[" LIST1 ( LIST1 search_query ) SEP "|" "]"
+]
+
+search_item: [
+| REPLACE search_where ":" ne_string OPT scope_delimiter
+| WITH OPT ( search_where ":" ) ne_string OPT scope_delimiter
+| DELETE ne_string OPT scope_delimiter
+| REPLACE search_where ":" constr_pattern
+| WITH OPT ( search_where ":" ) constr_pattern
+| DELETE constr_pattern
+]
+
+by_notation: [
+| REPLACE ne_string OPT [ "%" IDENT ]
+| WITH ne_string OPT [ "%" scope_key ]
+]
+
+decl_notation: [
+| REPLACE ne_lstring ":=" constr only_parsing OPT [ ":" IDENT ]
+| WITH ne_lstring ":=" constr only_parsing OPT [ ":" scope_name ]
+]
+
+
+only_parsing: [
+| OPTINREF
+]
+
+ltac_production_item: [
+| REPLACE ident "(" ident OPT ltac_production_sep ")"
+| WITH ident OPT ( "(" ident OPT ltac_production_sep ")" )
+| DELETE ident
+]
+
+input_fun: [
+| DELETE ident
+| DELETE "_"
+| name
+]
+
+let_clause: [
+| DELETE identref ":=" tactic_expr5
+| REPLACE "_" ":=" tactic_expr5
+| WITH name  ":=" tactic_expr5
+]
+
+tactic_mode: [
+(* todo: make sure to document this production! *)
+(* deleting to allow splicing query_command into command *)
+| DELETE OPT toplevel_selector query_command
+| DELETE OPT ltac_selector OPT ltac_info tactic ltac_use_default
+| DELETE "par" ":" OPT ltac_info tactic ltac_use_default
+(* Ignore attributes (none apply) and "...". *)
+| ltac_info tactic
+| MOVETO command ltac_info tactic
+| DELETE command
+]
+
+RENAME: [
+| toplevel_selector toplevel_selector_temp
+]
+
+toplevel_selector: [
+| selector_body
+| "all"
+| "!"
+(* par is accepted even though it's not in the .mlg *)
+| "par"
+]
+
+toplevel_selector_temp: [
+| DELETE selector_body ":"
+| DELETE "all" ":"
+| DELETE "!" ":"
+| toplevel_selector ":"
+]
+
+(* not included in insertprodn; defined in rst with :production: *)
+control_command: [ ]
+
+(* move all commands under "command" *)
+
+DELETE: [
+| vernac
+]
+
+vernac_aux: [
+| DELETE gallina "."
+| DELETE gallina_ext "."
+| DELETE syntax "."
+| DELETE command_entry
+]
+
+command: [
+| gallina
+| gallina_ext
+| syntax
+| query_command
+| vernac_control
+| vernac_toplevel
+| command_entry
+]
+
+SPLICE: [
+| query_command
+]
+
+query_command: [ ] (* re-add as a placeholder *)
+
+sentence: [
+| OPT attributes command "."
+| OPT attributes OPT ( num ":" ) query_command "."
+| OPT attributes OPT ( toplevel_selector ":" ) tactic_expr5 [ "." | "..." ]
+| control_command
+]
+
+document: [
+| LIST0 sentence
+]
+
+(* add in ltac and Tactic Notation tactics that appear in the doc: *)
+ltac_defined_tactics: [
+| "classical_left"
+| "classical_right"
+| "contradict" ident
+| "discrR"
+| "easy"
+| "exfalso"
+| "inversion_sigma"
+| "lia"
+| "lra"
+| "nia"
+| "nra"
+| "split_Rabs"
+| "split_Rmult"
+| "tauto"
+| "time_constr" tactic_expr5
+| "zify"
+]
+
+(* todo: need careful review; assume that "[" ... "]" are literals *)
+tactic_notation_tactics: [
+| "assert_fails" tactic_expr3
+| "assert_succeeds" tactic_expr3
+| "field" OPT ( "[" LIST1 operconstr200 "]" )
+| "field_simplify" OPT ( "[" LIST1 operconstr200 "]" ) LIST1 operconstr200 OPT ( "in" ident )
+| "field_simplify_eq" OPT ( "[" LIST1 operconstr200 "]" ) OPT ( "in" ident )
+| "intuition" OPT tactic_expr5
+| "nsatz" OPT ( "with" "radicalmax" ":=" operconstr200 "strategy" ":=" operconstr200 "parameters" ":=" operconstr200 "variables" ":=" operconstr200 )
+| "psatz" operconstr200 OPT int_or_var
+| "ring" OPT ( "[" LIST1 operconstr200 "]" )
+| "ring_simplify" OPT ( "[" LIST1 operconstr200 "]" ) LIST1 operconstr200 OPT ( "in" ident )  (* todo: ident was "hyp", worth keeping? *)
+]
+
+(* defined in OCaml outside of mlgs *)
+tactic_arg: [
+| "uconstr" ":" "(" operconstr200 ")"
+| MOVEALLBUT simple_tactic
+]
+
+nonterminal: [ ]
+
+value_tactic: [ ]
+
+RENAME: [
+| tactic_arg tactic_value
+]
+
+syn_value: [
+| IDENT; ":" "(" nonterminal ")"
+]
+
+tactic_value: [
+| [ value_tactic | syn_value ]
+]
+
+simple_tactic: [
+| ltac_builtins
+| ltac_constructs
+| ltac_defined_tactics
+| tactic_notation_tactics
+]
+
+tacdef_body: [
+| REPLACE global LIST1 input_fun ltac_def_kind tactic_expr5
+| WITH global LIST0 input_fun ltac_def_kind tactic_expr5
+| DELETE global ltac_def_kind tactic_expr5
+]
+
+SPLICE: [
+| def_token
+| extended_def_token
+]
+
+logical_kind: [
+| DELETE thm_token
+| DELETE assumption_token
+| [ thm_token | assumption_token ]
+| DELETE "Definition"
+| DELETE "Example"
+| DELETE "Context"
+| DELETE "Primitive"
+(* SubClass was deleted from def_token *)
+| [ "Definition" | "Example" | "Context" | "Primitive" ]
+| DELETE "Coercion"
+| DELETE "Instance"
+| DELETE "Scheme"
+| DELETE "Canonical"
+| [  "Coercion" | "Instance" | "Scheme" | "Canonical" | "SubClass" ]
+| DELETE "Field"
+| DELETE "Method"
+| [ "Field" | "Method" ]
+]
+
+SPLICE: [
+| noedit_mode
+| bigint
+| match_list
+| match_context_list
+| IDENT
+| LEFTQMARK
+| natural
+| NUMERAL
+| STRING
+| hyp
+| var
+| identref
+| pattern_ident
+| constr_eval  (* splices as multiple prods *)
+| tactic_then_last  (* todo: dependency on c.edit_mlg edit?? really useful? *)
+| Prim.name
+| ltac_selector
+| Constr.ident
+| attribute_list
+| operconstr99
+| operconstr90
+| operconstr9
+| operconstr8
+| pattern200
+| pattern99
+| pattern90
+| ne_lstring
+| ne_string
+| lstring
+| fullyqualid
+| global
+| reference
+| bar_cbrace
+| lconstr
+
+(*
+| ast_closure_term
+| ast_closure_lterm
+| ident_no_do
+| ssrterm
+| ssrtacarg
+| ssrtac3arg
+| ssrtclarg
+| ssrhyp
+| ssrhoi_hyp
+| ssrhoi_id
+| ssrindex
+| ssrhpats
+| ssrhpats_nobs
+| ssrfwdid
+| ssrmovearg
+| ssrcasearg
+| ssrrwargs
+| ssrviewposspc
+| ssrpatternarg
+| ssr_elsepat
+| ssr_mpat
+| ssrunlockargs
+| ssrcofixfwd
+| ssrfixfwd
+| ssrhavefwdwbinders
+| ssripats_ne
+| ssrparentacarg
+| ssrposefwd
+*)
+
+| preident
+| lpar_id_coloneq
+| binders
+| casted_constr
+| check_module_types
+| constr_pattern
+| decl_sep
+| function_rec_definition_loc (* loses funind annotation *)
+| glob
+| glob_constr_with_bindings
+| id_or_meta
+| lglob
+| ltac_tacdef_body
+| mode
+| mult_pattern
+| open_constr
+| record_declaration
+| tactic
+| uconstr
+| impl_ident_head
+| branches
+| check_module_type
+| decorated_vernac
+| ext_module_expr
+| ext_module_type
+| pattern_identref
+| test
+| binder_constr
+| atomic_constr
+| let_type_cstr
+| name_colon
+| closed_binder
+| binders_fixannot
+| as_return_type
+| case_type
+| universe_increment
+| type_cstr
+| record_pattern
+| evar_instance
+| fix_decls
+| cofix_decls
+| assum_list
+| assum_coe
+| inline
+| occs
+| ltac_info
+| field_mods
+| ltac_production_sep
+| ltac_tactic_level
+| printunivs_subgraph
+| ring_mods
+| eliminator  (* todo: splice or not? *)
+| quoted_attributes  (* todo: splice or not? *)
+| printable
+| only_parsing
+| record_fields
+| constructor_type
+| record_binder
+| at_level_opt
+| table_value
+| in_or_out_modules
+| option_setting
+| orient
+| with_bindings
+| by_arg_tac
+| by_tactic
+| quantified_hypothesis
+| nat_or_var
+| in_hyp_list
+| rename
+| export_token
+| reserv_tuple
+| inst
+| opt_coercion
+| opt_constructors_or_fields
+| is_module_type
+| is_module_expr
+| module_expr
+| mlname
+| withtac
+| debug
+| eauto_search_strategy
+| constr_body
+| reference_or_constr
+| opt_hintbases
+| hints_path_atom
+| opthints
+| scheme
+| fresh_id
+| ltac_def_kind
+| intropatterns
+| instance_name
+| failkw
+| selector
+| ne_in_or_out_modules
+| search_queries
+| locatable
+| scope_delimiter
+| bignat
+| one_import_filter_name
+| search_where
+| message_token
+| input_fun
+| tactic_then_last
+| ltac_use_default
+| toplevel_selector_temp
+| comment
+| register_token
+| match_context_rule
+| match_rule
+| by_notation
+] (* end SPLICE *)
+
+RENAME: [
+| clause clause_dft_concl
+
+| tactic3 ltac_expr3  (* todo: can't figure out how this gets mapped by coqpp *)
+| tactic1 ltac_expr1  (* todo: can't figure out how this gets mapped by coqpp *)
+| tactic0 ltac_expr0  (* todo: can't figure out how this gets mapped by coqpp *)
+| tactic_expr5 ltac_expr
+| tactic_expr4 ltac_expr4
+| tactic_expr3 ltac_expr3
+| tactic_expr2 ltac_expr2
+| tactic_expr1 ltac_expr1
+| tactic_expr0 ltac_expr0
+
+(* | nonsimple_intropattern intropattern (* ltac2 *) *)
+
+| operconstr200 term   (* historical name *)
+| operconstr100 term100
+| operconstr10 term10
+| operconstr1 term1
+| operconstr0 term0
+| pattern100 pattern
+| match_constr term_match
+(*| impl_ident_tail impl_ident*)
+| ssexpr35 ssexpr (* strange in mlg, ssexpr50 is after this *)
+
+| tactic_then_gen for_each_goal
+| selector_body selector
+| match_hyps match_hyp
+
+| BULLET bullet
+| fix_decl fix_body
+| cofix_decl cofix_body
+(* todo: it's confusing that Constr.constr and constr are different things *)
+| constr one_term
+| appl_arg arg
+| rec_definition fix_definition
+| corec_definition cofix_definition
+| univ_instance univ_annot
+| simple_assum_coe assumpt
+| of_type_with_opt_coercion of_type
+| attribute_value attr_value
+| constructor_list_or_record_decl constructors_or_record
+| record_binder_body field_body
+| class_rawexpr class
+| smart_global reference
+(*
+| searchabout_query search_item
+*)
+| option_table setting_name
+| argument_spec_block arg_specs
+| more_implicits_block implicits_alt
+| arguments_modifier args_modifier
+| constr_as_binder_kind binder_interp
+| syntax_extension_type explicit_subentry
+| numnotoption numeral_modifier
+| tactic_arg_compat tactic_arg
+| lconstr_pattern cpattern
+]
+
+simple_tactic: [
+(* due to renaming of tactic_arg; Use LIST1 for function application *)
+| qualid LIST1 tactic_arg
+]
+
+(* todo: doesn't work if up above... maybe because 'clause' doesn't exist? *)
+clause_dft_concl: [
+| OPTINREF
+]
+
+SPLICE: [
+| gallina
+| gallina_ext
+| syntax
+| vernac_control
+| vernac_toplevel
+| command_entry
+| ltac_builtins
+| ltac_constructs
+| ltac_defined_tactics
+| tactic_notation_tactics
+]
+(* todo: ssrreflect*.rst ref to fix_body is incorrect *)
+
+REACHABLE: [
+| command
+| simple_tactic
+]
+
+NOTINRSTS: [
+| simple_tactic
+| REACHABLE
+| NOTINRSTS
+]
+
+REACHABLE: [
+| NOTINRSTS
+]
+
+strategy_level: [
+| DELETE strategy_level0
+]
