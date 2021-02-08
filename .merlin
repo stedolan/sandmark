@@ -1,0 +1,9 @@
+S lib
+B _build/lib
+
+# Only for testing
+
+S test
+B _build/test
+
+PKG camlzip alcotest re.str cmdliner crowbar
