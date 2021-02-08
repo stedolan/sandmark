@@ -1,0 +1,3 @@
+(deprecated_library_name
+ (old_public_name dune.configurator)
+ (new_public_name dune-configurator))
