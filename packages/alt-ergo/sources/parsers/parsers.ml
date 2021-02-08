@@ -94,26 +94,7 @@ let parse_trigger ?lang lexbuf =
 
 (* pre-condition: f is of the form f'.zip *)
 let extract_zip_file f =
-  let cin = MyZip.open_in f in
-  try
-    match MyZip.entries cin with
-    | [e] when not (MyZip.is_directory e) ->
-      if verbose () then
-        eprintf
-          "I'll read the content of '%s' in the given zip@."
-          (MyZip.filename e);
-      let content = MyZip.read_entry cin e in
-      MyZip.close_in cin;
-      content
-    | _ ->
-      MyZip.close_in cin;
-      raise (Arg.Bad
-               (sprintf "%s '%s' %s@?"
-                  "The zipped file" f
-                  "should contain exactly one file."))
-  with e ->
-    MyZip.close_in cin;
-    raise e
+  failwith "Zip unsupported in this build of Alt-Ergo"
 
 let parse_input_file file =
   if verbose() then fprintf fmt "[input_lang] parsing file %s@." file;

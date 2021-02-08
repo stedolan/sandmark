@@ -14,12 +14,12 @@
 (library
     (name             AltErgoParsers)
     (public_name      alt-ergo-parsers)
-    (libraries        camlzip dynlink psmt2-frontend alt-ergo-lib stdlib-shims)
+    (libraries        dynlink alt-ergo-lib stdlib-shims)
     (modules
       ; common
-      Parsers Parsers_loader MyZip
+      Parsers Parsers_loader
       ; psmt2
-      Psmt2_to_alt_ergo
+      ; Psmt2_to_alt_ergo
       ; AE format
       Why_lexer Why_parser
     )

@@ -4,8 +4,6 @@ META
 
 # Generated source files
 *.merlin
-sources/Makefile.config
-sources/lib/util/config.ml
 
 # Generated installation files
 sources/*.install
