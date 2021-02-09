@@ -23,7 +23,6 @@ val configdirsuffix : string (* config files relative to installation prefix *)
 val datadirsuffix : string   (* data files relative to installation prefix *)
 val docdirsuffix : string    (* doc directory relative to installation prefix *)
 
-val ocamlfind : string
 
 val caml_flags : string     (* arguments passed to ocamlc (ie. CAMLFLAGS) *)
 

@@ -434,14 +434,14 @@ let _ = parse_args ()
 (** Default OCaml binaries *)
 
 type camlexec =
- { mutable find : string;
+ { 
    mutable top : string;
    mutable lex : string;
    mutable yacc : string;
   }
 
 let camlexec =
-  { find = "ocamlfind";
+  {
     top = "ocaml";
     lex = "ocamllex";
     yacc = "ocamlyacc";
@@ -450,7 +450,7 @@ let camlexec =
 let reset_caml_lex c o = c.lex <- o
 let reset_caml_yacc c o = c.yacc <- o
 let reset_caml_top c o = c.top <- o
-let reset_caml_find c o = c.find <- o
+
 
 let coq_debug_flag = if !prefs.debug then "-g" else ""
 let coq_profile_flag = if !prefs.profile then "-p" else ""
@@ -527,20 +527,9 @@ let browser =
 (** * OCaml programs *)
 
 let camlbin, caml_version, camllib, findlib_version =
-  let () = match !prefs.ocamlfindcmd with
-    | Some cmd -> reset_caml_find camlexec cmd
-    | None ->
-       try reset_caml_find camlexec (which camlexec.find)
-       with Not_found ->
-         die (sprintf "Error: cannot find '%s' in your path!\n" camlexec.find ^
-                "Please adjust your path or use the -ocamlfind option of ./configure")
-  in
-  if not (is_executable camlexec.find)
-  then die ("Error: cannot find the executable '"^camlexec.find^"'.")
-  else
-    let findlib_version, _ = run camlexec.find ["query"; "findlib"; "-format"; "%v"] in
-    let caml_version, _ = run camlexec.find ["ocamlc";"-version"] in
-    let camllib, _ = run camlexec.find ["printconf";"stdlib"] in
+    let findlib_version = "100" in
+    let caml_version, _ = run "ocamlc" ["-version"] in
+    let camllib, _ = run "ocamlc" ["-where"] in
     let camlbin = (* TODO beurk beurk beurk *)
       Filename.dirname (Filename.dirname camllib) / "bin/" in
     let () =
@@ -654,10 +643,8 @@ let msg_no_dynlink_cmxa () =
 
 let check_native () =
   let () = if !prefs.byteonly then raise Not_found in
-  let version, _ = tryrun camlexec.find ["opt";"-version"] in
+  let version, _ = tryrun "ocamlopt" ["-version"] in
   if version = "" then let () = msg_no_ocamlopt () in raise Not_found
-  else if fst (tryrun camlexec.find ["query";"dynlink"]) = ""
-  then let () = msg_no_dynlink_cmxa () in raise Not_found
   else
     let () =
       if version <> caml_version then
@@ -692,29 +679,10 @@ let operating_system =
    by Zarith)
 *)
 
-let check_for_numlib () =
-  if caml_version_nums >= [4;6;0] then
-    let numlib,_ = tryrun camlexec.find ["query";"num"] in
-    match numlib with
-    | ""  ->
-       die "Num library not installed, required for OCaml 4.06 or later"
-    | _   -> cprintf "You have the Num library installed. Good!"
-
-let numlib =
-  check_for_numlib ()
 
 (** * lablgtk3 and CoqIDE *)
 
 (** Detect and/or verify the Lablgtk3 location *)
-
-let get_lablgtkdir () =
-  tryrun camlexec.find ["query";"lablgtk3-sourceview3"]
-
-(** Detect and/or verify the Lablgtk2 version *)
-
-let check_lablgtk_version () =
-  let v, _ = tryrun camlexec.find ["query"; "-format"; "%v"; "lablgtk3"] in
-  (true, v)
 
 (* ejgallego: we wait to do version checks until an official release is out *)
 (*  try
@@ -749,20 +717,7 @@ let lablgtkdir = ref ""
 
 let check_coqide () =
   if !prefs.coqide = Some No then set_ide No "CoqIde manually disabled";
-  let dir, via = get_lablgtkdir () in
-  if dir = ""
-  then set_ide No "LablGtk3 or LablGtkSourceView3 not found"
-  else
-    let (ok, version) = check_lablgtk_version () in
-    let found = sprintf "LablGtk3 and LablGtkSourceView3 found (%s)" version in
-    if not ok then set_ide No (found^", but too old (required >= 3.0, found " ^ version ^ ")");
-    (* We're now sure to produce at least one kind of coqide *)
-    lablgtkdir := shorten_camllib dir;
-    if !prefs.coqide = Some Byte then set_ide Byte (found^", bytecode requested");
-    if best_compiler <> "opt" then set_ide Byte (found^", but no native compiler");
-    if not (Sys.file_exists (camllib/"threads"/"threads.cmxa")) then
-      set_ide Byte (found^", but no native threads");
-    set_ide Opt (found^", with native threads")
+  set_ide No "LablGtk3 or LablGtkSourceView3 not found"
 
 let coqide =
   try check_coqide ()
@@ -775,26 +730,6 @@ let idearchfile = ref ""
 let idecdepsflags = ref ""
 let idearchdef = ref "X11"
 
-let coqide_flags () =
-  match coqide, arch with
-    | "opt", "Darwin" when !prefs.macintegration ->
-      let osxdir,_ = tryrun camlexec.find ["query";"lablgtkosx"] in
-      if osxdir <> "" then begin
-        idearchflags := "lablgtkosx.cma";
-        idearchdef := "QUARTZ"
-      end
-    | "opt", "win32" ->
-      idearchfile := "ide/coqide/ide_win32_stubs.o ide/coqide/coq_icon.o";
-      idecdepsflags := "-custom";
-      idearchflags := "-ccopt '-subsystem windows'";
-      idearchdef := "WIN32"
-    | _, "win32" ->
-      idearchflags := "-ccopt '-subsystem windows'";
-      idearchdef := "WIN32"
-    | _ -> ()
-
-let _ = coqide_flags ()
-
 
 (** * strip command *)
 
@@ -803,7 +738,7 @@ let strip =
     if hasnatdynlink then "true" else "strip"
   else
     if !prefs.profile || !prefs.debug then "true" else begin
-    let _, all = run camlexec.find ["ocamlc";"-config"] in
+    let _, all = run "ocamlc" ["-config"] in
     let strip = String.concat "" (List.map (fun l ->
         match string_split ' ' l with
         | "ranlib:" :: cc :: _ -> (* on windows, we greb the right strip *)
@@ -935,8 +870,8 @@ let cflags_sse2 = "-msse2 -mfpmath=sse"
 let cflags, sse2_math =
   let _, slurp =
     (* Test SSE2_MATH support <https://stackoverflow.com/a/45667927> *)
-    tryrun camlexec.find
-      ["ocamlc"; "-ccopt"; cflags_dflt ^ " -march=native -dM -E " ^ cflags_sse2;
+    tryrun "ocamlc"
+      ["-ccopt"; cflags_dflt ^ " -march=native -dM -E " ^ cflags_sse2;
        "-c"; coqtop/"dev/header.c"] in  (* any file *)
   if List.exists (fun line -> starts_with line "#define __SSE2_MATH__ 1") slurp
   then (cflags_dflt ^ " " ^ cflags_sse2, true)
@@ -1075,7 +1010,6 @@ let write_configml f =
   pr_p "configdirsuffix" configdirsuffix;
   pr_p "datadirsuffix" datadirsuffix;
   pr_p "docdirsuffix" docdirsuffix;
-  pr_s "ocamlfind" camlexec.find;
   pr_s "caml_flags" caml_flags;
   pr_s "version" coq_version;
   pr_s "caml_version" caml_version;
@@ -1157,7 +1091,6 @@ let write_makefile f =
   pr "VERSION4MACOS=%s\n\n" coq_macos_version;
   pr "# Objective-Caml compile command\n";
   pr "OCAML=%S\n" camlexec.top;
-  pr "OCAMLFIND=%S\n" camlexec.find;
   pr "OCAMLLEX=%S\n" camlexec.lex;
   pr "OCAMLYACC=%S\n" camlexec.yacc;
   pr "# The best compiler: native (=opt) or bytecode (=byte)\n";
