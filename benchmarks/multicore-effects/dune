@@ -1,0 +1,21 @@
+(executables
+    (names algorithmic_differentiation)
+    (modules algorithmic_differentiation))
+
+(executables
+    (names queens)
+    (modules queens))
+
+(executables
+    (names eratosthenes)
+    (modules eratosthenes)
+    (libraries lockfree))
+
+(executables
+    (names test_sched)
+    (modules ms_sched test_sched)
+    (libraries lockfree))
+
+(alias
+		(name multibench_serial)
+		(deps algorithmic_differentiation.exe queens.exe eratosthenes.exe test_sched.exe))
