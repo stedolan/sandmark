@@ -6,14 +6,93 @@
 
 ; Dune doesn't use configure's output, but it is still necessary for
 ; some Coq files to work; will be fixed in the future.
+; (rule
+;  (targets coq_config.ml coq_config.py Makefile dune.c_flags)
+;  (mode fallback)
+;  (deps
+;    %{project_root}/configure.ml
+;    %{project_root}/dev/ocamldebug-coq.run
+;    %{project_root}/dev/header.c
+;   ; Needed to generate include lists for coq_makefile
+;   (source_tree %{project_root}/plugins)
+;   (env_var COQ_CONFIGURE_PREFIX))
+;  (action (chdir %{project_root} (run %{ocaml} configure.ml -no-ask -native-compiler no -bytecode-compiler no))))
+
 (rule
- (targets coq_config.ml coq_config.py Makefile dune.c_flags)
- (mode fallback)
- (deps
-   %{project_root}/configure.ml
-   %{project_root}/dev/ocamldebug-coq.run
-   %{project_root}/dev/header.c
-  ; Needed to generate include lists for coq_makefile
-  (source_tree %{project_root}/plugins)
-  (env_var COQ_CONFIGURE_PREFIX))
- (action (chdir %{project_root} (run %{ocaml} configure.ml -no-ask -native-compiler no -bytecode-compiler no))))
+  (targets coq_config.ml)
+  (action (with-stdout-to coq_config.ml (progn
+(system "echo \"let coqlib = \\\"$(realpath $(dirname '%{lib:coq.config:coq_config.mli}')/..)\\\"\"")
+(echo "
+let local = false
+let configdir = \"/nonexistant\"
+let datadir = \"/nonexistant\"
+let docdir = \"/nonexistant\"
+let coqlibsuffix = \"lib/coq\"
+let configdirsuffix = \"etc/xdg/coq\"
+let datadirsuffix = \"share/coq\"
+let docdirsuffix = \"share/doc/coq\"
+let caml_flags = \"-thread -rectypes -w +a-4-9-27-41-42-44-45-48-58-67   -safe-string -strict-sequence\"
+let version = \"8.13+alpha\"
+let caml_version = \"4.11.1\"
+let caml_version_nums = [4;11;1]
+let date = \"February 2021\"
+let compile_date = \"Feb 9 2021 17:20:14\"
+let arch = \"Linux\"
+let arch_is_win32 = false
+let exec_extension = \"\"
+let gtk_platform = `X11
+let has_natdynlink = true
+let vo_version = 81291l
+let state_magic_number = 581291
+let browser = \"/bin/false\"
+let wwwcoq = \"http://coq.inria.fr/\"
+let wwwbugtracker = \"http://coq.inria.fr/bugs/\"
+let wwwrefman = \"http://coq.inria.fr/distrib/V8.13+alpha/refman/\"
+let wwwstdlib = \"http://coq.inria.fr/distrib/V8.13+alpha/stdlib/\"
+let localwwwrefman = \"\"
+let bytecode_compiler = false
+let native_compiler = false
+
+let core_src_dirs = [
+  \"config\";
+  \"lib\";
+  \"clib\";
+  \"kernel\";
+  \"library\";
+  \"engine\";
+  \"pretyping\";
+  \"interp\";
+  \"gramlib\";
+  \"gramlib/.pack\";
+  \"parsing\";
+  \"proofs\";
+  \"tactics\";
+  \"toplevel\";
+  \"printing\";
+  \"ide\";
+  \"stm\";
+  \"vernac\";
+]
+
+let plugins_dirs = [
+  \"plugins/btauto\";
+  \"plugins/cc\";
+  \"plugins/derive\";
+  \"plugins/extraction\";
+  \"plugins/firstorder\";
+  \"plugins/funind\";
+  \"plugins/ltac\";
+  \"plugins/micromega\";
+  \"plugins/nsatz\";
+  \"plugins/omega\";
+  \"plugins/rtauto\";
+  \"plugins/setoid_ring\";
+  \"plugins/ssr\";
+  \"plugins/ssrmatching\";
+  \"plugins/ssrsearch\";
+  \"plugins/syntax\";
+]
+
+let all_src_dirs = core_src_dirs @ plugins_dirs
+  ")))))
+

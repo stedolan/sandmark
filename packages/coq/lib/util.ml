@@ -12,6 +12,7 @@ type 'a pervasives_ref = 'a ref
 let pervasives_ref = ref
 let pervasives_compare = compare
 let (!) = (!)
+let pp a b = a + b
 let (+) = (+)
 let (-) = (-)
 
