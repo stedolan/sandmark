@@ -1,0 +1,5 @@
+(executable
+ (name cpdfcommandrun)
+ (public_name cpdf)
+ (libraries camlpdf unix)
+ (modules xmlm cpdfstrftime cpdf cpdfcommand cpdfcommandrun))
