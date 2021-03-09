@@ -1,0 +1,5 @@
+(library
+ (name astring)
+ (public_name astring)
+ (modules astring_unsafe astring_base astring_escape astring_char astring_sub astring_string astring)
+ (wrapped false))
