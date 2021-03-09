@@ -1,0 +1,9 @@
+(library
+ (name camlpdf)
+ (public_name camlpdf)
+ (foreign_stubs
+   (language c)
+   (names flatestubs rijndael-alg-fst stubs-aes sha2 stubs-sha2)
+   (extra_deps miniz.c))
+ (modules pdfutil pdfio pdftransform pdfunits pdfpaper pdfcryptprimitives pdf pdfcrypt pdfflate pdfcodec pdfwrite pdfgenlex pdfread pdfjpeg pdfops pdfdest pdfmarks pdfpagelabels pdfpage pdfannot pdffun pdfspace pdfimage pdfafm pdfafmdata pdfglyphlist pdftext pdfstandard14 pdfgraphics pdfshapes pdfdate pdfocg pdfcff pdftype1 pdftruetype pdftype0 pdfmerge)
+ (wrapped false))
