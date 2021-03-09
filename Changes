@@ -1,0 +1,57 @@
+Version 2.3 (October 2019)
+
+o Directly set and remove Trim, Art, and Bleed boxes
+o Dump attachments to file
+o Extended bookmark format, preserving all bookmark information
+o New -pad-with, -pad-mutiple-before options
+o Set or create XMP metadata
+o Remove graphics clipping
+o Extended support for reading malformed files
+o Embed missing fonts by calling out to gs
+o Set bookmarks open to a given level
+o Create PDF files from scatch
+o Remove single images by name
+o Add trim marks
+
+Version 2.2 (patchlevel 1)
+
+o Fix for inability to read null objects in streams
+o Workaround for Adobe "Error 21" on re-saving encrypted files
+o More efficient bookmark operations on files with many pages
+o New operation -hard-box to clip contents to a given box
+
+Version 2.2 (March 2017)
+
+o Perform arithmetic on dimensions when specifying size or position
+o Add simple rectangles to PDF to blank things out
+o Stamping operations now preserve annotations
+o Decryption fully on-demand for speed.
+o -keep-l keeps existing linearization status
+o -remove-dict-entry to remove the contents of a dictionary entry
+o -topline in addition to -midline
+o -producer and -creator may be used to alter producer and creator
+in conjunction with any other operation
+o -topline and -midline now apply to stamps
+o -list-spot-colours
+o -bates-at-range and -bates-pad-to
+o -print-page-labels
+o -squeeze replaces smpdf
+o Preserve more sharing of data when doing merges and page alterations
+
+Version 2.1 (December 2014)
+
+o Encryption now much, much faster
+o Faster parsing of delayed object streams on large files
+o -decompress now leaves object streams decompressed
+o Select pages by landscape-ness or portrait-ness in a page range
+o New -open-at-page and -open-at-page-fit option to set the open action
+o New -recrypt option to re-encrypt output
+o Reads XMP metadata and outputs it on -info
+o New -center position for text
+o -stamp can now use positions, just like stamping text
+o Better handling of permissions for files with user passwords
+o Linearization excised
+o Can encrypt or recrypt output of -split and -split-bookmarks now
+o -args replaces -control with better behaviour
+o Can scale a stamp to fit before stamping with -scale-stamp-to-fit
+
