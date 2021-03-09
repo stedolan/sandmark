@@ -1,0 +1,4 @@
+(library
+ (name uutf)
+ (public_name uutf)
+ (modules uutf))
