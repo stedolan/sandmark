@@ -1,0 +1,4 @@
+(library
+ (name logs)
+ (public_name logs)
+ (modules logs))
