@@ -1,0 +1,4 @@
+(library
+ (name react)
+ (public_name react)
+ (modules react))
