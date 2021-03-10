@@ -1,13 +1,3 @@
-(* -*- tuareg -*- *)
-
-let bisect_ppx =
-  match Sys.getenv "BISECT_ENABLE" with
-  | "yes" -> "bisect_ppx"
-  | _ -> ""
-  | exception _ -> ""
-
-let () = Jbuild_plugin.V1.send @@ {|
-
 (library
  (name ppx_lwt)
  (public_name lwt_ppx)
@@ -16,7 +6,5 @@ let () = Jbuild_plugin.V1.send @@ {|
  (libraries ocaml-compiler-libs.common ppxlib)
  (ppx_runtime_libraries lwt)
  (kind ppx_rewriter)
- (preprocess (pps ppxlib.metaquot|} ^ bisect_ppx ^ {|))
+ (preprocess (pps ppxlib.metaquot))
  (flags (:standard -w +A-4)))
-
-|}
