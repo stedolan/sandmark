@@ -1,0 +1,5 @@
+(executable
+ (name minilight)
+ (public_name minilight-ocaml)
+ (modules random2 vector3f triangle spatialIndex scene surfacePoint rayTracer image camera minilight)
+ (libraries unix))
