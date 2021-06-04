@@ -1,3 +1,0 @@
-(alias
-  (name buildbench)
-  (deps %{bin:coqc} AbstractInterpretation.v BasicSyntax.v ))

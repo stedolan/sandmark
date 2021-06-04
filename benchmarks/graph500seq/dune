@@ -1,4 +1,0 @@
-(executables
-	(names  kernel2	kernel3))
-
-(alias (name buildbench) (deps kernel2.exe kernel3.exe))
