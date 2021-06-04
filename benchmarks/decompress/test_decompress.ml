@@ -38,7 +38,7 @@ let compress data =
   let flush v len = blit_to_buffer t b v len in
 
   Higher.compress
-    ~level:3 ~w ~q ~i ~o ~refill ~flush ;
+    ~level:3 ~w ~q ~refill ~flush i o;
   Buffer.contents b
 
 let uncompress data =
@@ -59,7 +59,7 @@ let uncompress data =
       v ~dst_off:0 ~len ; p := !p + len ; len in
   let flush v len = blit_to_buffer t b v len in
 
-  Higher.uncompress ~allocate ~i ~o ~refill ~flush
+  Higher.uncompress ~allocate ~refill ~flush i o
 
 let () = Random.init(42)
 
