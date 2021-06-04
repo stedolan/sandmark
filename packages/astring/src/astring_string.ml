@@ -1,7 +1,6 @@
 (*---------------------------------------------------------------------------
-   Copyright (c) 2015 Daniel C. Bünzli. All rights reserved.
+   Copyright (c) 2015 The astring programmers. All rights reserved.
    Distributed under the ISC license, see terms at the end of the file.
-   %%NAME%% %%VERSION%%
   ---------------------------------------------------------------------------*)
 
 open Astring_unsafe
@@ -689,6 +688,9 @@ module Set = struct
   let find s ss = try Some (find s ss) with Not_found -> None
 
   let of_list = List.fold_left (fun acc s -> add s acc) empty
+
+  let of_stdlib_set s = s
+  let to_stdlib_set s = s
 end
 
 module Map = struct
@@ -712,6 +714,9 @@ module Map = struct
   let dom m = fold (fun k _ acc -> Set.add k acc) m Set.empty
 
   let of_list bs = List.fold_left (fun m (k,v) -> add k v m) empty bs
+
+  let of_stdlib_map m = m
+  let to_stdlib_map m = m
 
   let pp ?sep:(pp_sep = Format.pp_print_cut) pp_binding ppf (m : 'a t) =
     let pp_binding k v is_first =
@@ -764,7 +769,7 @@ let of_float = Astring_base.of_float
 let to_float = Astring_base.to_float
 
 (*---------------------------------------------------------------------------
-   Copyright (c) 2015 Daniel C. Bünzli
+   Copyright (c) 2015 The astring programmers
 
    Permission to use, copy, modify, and/or distribute this software for any
    purpose with or without fee is hereby granted, provided that the above

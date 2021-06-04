@@ -1,7 +1,6 @@
 (*---------------------------------------------------------------------------
-   Copyright (c) 2015 Daniel C. Bünzli. All rights reserved.
+   Copyright (c) 2015 The astring programmers. All rights reserved.
    Distributed under the ISC license, see terms at the end of the file.
-   %%NAME%% %%VERSION%%
   ---------------------------------------------------------------------------*)
 
 (** Alternative [Char] and [String] modules.
@@ -11,10 +10,8 @@
     module.
 
     Consult the {{!diff}differences} with the OCaml
-    {{:http://caml.inria.fr/pub/docs/manual-ocaml/libref/String.html}[String]}
-    module, the {{!port}porting guide} and a few {{!examples}examples}.
-
-    {e %%VERSION%% - {{:%%PKG_HOMEPAGE%% }homepage}} *)
+    {{!Stdlib.String}[String]}
+    module, the {{!port}porting guide} and a few {{!examples}examples}. *)
 
 (** {1 String} *)
 
@@ -22,11 +19,9 @@ val strf : ('a, Format.formatter, unit, string) format4 -> 'a
 (** [strf] is {!Format.asprintf}. *)
 
 val ( ^ ) : string -> string -> string
-(** [s ^ s'] is {!String.append}. *)
+(** [s ^ s'] is {!val:String.append}. *)
 
-(** Characters (bytes in fact).
-
-    {e %%VERSION%% - {{:%%PKG_HOMEPAGE%% }homepage}} *)
+(** Characters (bytes in fact). *)
 module Char : sig
 
   (** {1 Bytes} *)
@@ -59,7 +54,7 @@ module Char : sig
   (** [equal b b'] is [b = b']. *)
 
   val compare : char -> char -> int
-  (** [compare b b'] is {!Pervasives.compare}[ b b']. *)
+  (** [compare b b'] is {!Stdlib.compare}[ b b']. *)
 
   (** {1 Bytes as US-ASCII characters} *)
 
@@ -189,9 +184,7 @@ end
     Whenever possible compile your code with the [-safe-string]
     option. This module does not expose any mutable operation on
     strings and {b assumes} strings are immutable. See the
-    {{!port}porting guide}.
-
-    {e %%VERSION%% - {{:%%PKG_HOMEPAGE%% }homepage}} *)
+    {{!port}porting guide}. *)
 module String : sig
 
   (** {1 String} *)
@@ -286,7 +279,7 @@ module String : sig
   (** [equal s s'] is [s = s']. *)
 
   val compare : string -> string -> int
-  (** [compare s s'] is [Pervasives.compare s s'], it compares the
+  (** [compare s s'] is [Stdlib.compare s s'], it compares the
       byte sequences of [s] and [s'] in lexicographical order. *)
 
   (** {1:extract Extracting substrings}
@@ -670,8 +663,8 @@ v}
     val find_sub :?rev:bool -> sub:sub -> sub -> sub option
     (** [find_sub ~rev ~sub s] is the substring of [s] (if any) that
         spans the first match of [sub] in [s] after position [start s]
-        ([rev] is [false], defaults) or before [stop s] ([rev] is
-        [false]). Only bytes are compared and [sub] can be on a
+        ([rev] is [false], default) or before [stop s] ([rev] is
+        [true]). Only bytes are compared and [sub] can be on a
         different base string. [None] is returned if there is no match of
         [sub] in [s]. *)
 
@@ -729,19 +722,19 @@ v}
 
     val of_bool : bool -> sub
     (** [of_bool b] is a string representation for [b]. Relies on
-        {!Pervasives.string_of_bool}. *)
+        {!Stdlib.string_of_bool}. *)
 
     val to_bool : sub -> bool option
     (** [to_bool s] is a [bool] from [s], if any. Relies on
-        {!Pervasives.bool_of_string}. *)
+        {!Stdlib.bool_of_string}. *)
 
     val of_int : int -> sub
     (** [of_int i] is a string representation for [i]. Relies on
-        {!Pervasives.string_of_int}. *)
+        {!Stdlib.string_of_int}. *)
 
     val to_int : sub -> int option
     (** [to_int] is an [int] from [s], if any. Relies on
-        {!Pervasives.int_of_string}. *)
+        {!Stdlib.int_of_string}. *)
 
     val of_nativeint : nativeint -> sub
     (** [of_nativeint i] is a string representation for [i]. Relies on
@@ -769,11 +762,11 @@ v}
 
     val of_float : float -> sub
     (** [of_float f] is a string representation for [f]. Relies on
-        {!Pervasives.string_of_float}. *)
+        {!Stdlib.string_of_float}. *)
 
     val to_float : sub -> float option
     (** [to_float s] is a [float] from [s], if any. Relies
-        on {!Pervasives.float_of_string}. *)
+        on {!Stdlib.float_of_string}. *)
 
     (** {1:fig Substring stretching graphical guide}
 
@@ -904,7 +897,7 @@ v} *)
     val is_valid : string -> bool
     (** [is_valid s] is [true] iff only for all indices [i] of [s],
         [s.[i]] is an US-ASCII character, i.e. a byte in the range
-        \[[0x00];[0x1F]\]. *)
+        \[[0x00];[0x7F]\]. *)
 
     (** {1:case Casing transforms}
 
@@ -1024,6 +1017,12 @@ v} *)
     val of_list : string list -> set
     (** [of_list ss] is a set from the list [ss]. *)
 
+    val of_stdlib_set : Set.Make(String).t -> set
+    (** [of_stdlib_set s] is a set from the stdlib-compatible set [s]. *)
+
+    val to_stdlib_set : set -> Set.Make(String).t
+    (** [to_stdlib_set s] is the stdlib-compatible set equivalent to [s]. *)
+
     val pp : ?sep:(Format.formatter -> unit -> unit) ->
       (Format.formatter -> string -> unit) ->
         Format.formatter -> set -> unit
@@ -1038,57 +1037,57 @@ v} *)
         [ppf]. *)
   end
 
-  type +'a map
-  (** The type for maps from strings to values of type 'a. *)
-
   (** String maps. *)
   module Map : sig
 
     (** {1 String maps} *)
 
     include Map.S with type key := string
-                   and type 'a t := 'a map
 
-    type 'a t = 'a map
-
-    val min_binding : 'a map -> (string * 'a) option
+    val min_binding : 'a t -> (string * 'a) option
     (** Exception safe {!Map.S.min_binding}. *)
 
-    val get_min_binding : 'a map -> (string * 'a)
+    val get_min_binding : 'a t -> (string * 'a)
     (** [get_min_binding] is like {!min_binding} but @raise Invalid_argument
         on the empty map. *)
 
-    val max_binding : 'a map -> (string * 'a) option
+    val max_binding : 'a t -> (string * 'a) option
     (** Exception safe {!Map.S.max_binding}. *)
 
-    val get_max_binding : 'a map -> string * 'a
+    val get_max_binding : 'a t -> string * 'a
     (** [get_max_binding] is like {!max_binding} but @raise Invalid_argument
         on the empty map. *)
 
-    val choose : 'a map -> (string * 'a) option
+    val choose : 'a t -> (string * 'a) option
     (** Exception safe {!Map.S.choose}. *)
 
-    val get_any_binding : 'a map -> (string * 'a)
+    val get_any_binding : 'a t -> (string * 'a)
     (** [get_any_binding] is like {!choose} but @raise Invalid_argument
         on the empty map. *)
 
-    val find : string -> 'a map -> 'a option
+    val find : string -> 'a t -> 'a option
     (** Exception safe {!Map.S.find}. *)
 
-    val get : string -> 'a map -> 'a
+    val get : string -> 'a t -> 'a
     (** [get k m] is like {!Map.S.find} but raises [Invalid_argument] if
         [k] is not bound in [m]. *)
 
-    val dom : 'a map -> set
+    val dom : 'a t -> set
     (** [dom m] is the domain of [m]. *)
 
-    val of_list : (string * 'a) list -> 'a map
+    val of_list : (string * 'a) list -> 'a t
     (** [of_list bs] is [List.fold_left (fun m (k, v) -> add k v m) empty
         bs]. *)
 
+    val of_stdlib_map : 'a Map.Make(String).t -> 'a t
+    (** [of_stdlib_map m] is a map from the stdlib-compatible map [m]. *)
+
+    val to_stdlib_map : 'a t -> 'a Map.Make(String).t
+    (** [to_stdlib_map m] is the stdlib-compatible map equivalent to [m]. *)
+
     val pp : ?sep:(Format.formatter -> unit -> unit) ->
       (Format.formatter -> string * 'a -> unit) -> Format.formatter ->
-      'a map -> unit
+      'a t -> unit
     (** [pp ~sep pp_binding ppf m] formats the bindings of [m] on
         [ppf]. Each binding is formatted with [pp_binding] and
         bindings are separated by [sep] (defaults to
@@ -1096,14 +1095,17 @@ v} *)
         untouched. *)
 
     val dump : (Format.formatter -> 'a -> unit) -> Format.formatter ->
-      'a map -> unit
+      'a t -> unit
     (** [dump pp_v ppf m] prints an unspecified representation of [m] on
         [ppf] using [pp_v] to print the map codomain elements. *)
 
-    val dump_string_map : Format.formatter -> string map -> unit
+    val dump_string_map : Format.formatter -> string t -> unit
     (** [dump_string_map ppf m] prints an unspecified representation of the
         string map [m] on [ppf]. *)
   end
+
+  type +'a map = 'a Map.t
+  (** The type for maps from strings to values of type 'a. *)
 
   (** {1:convert OCaml base type conversions} *)
 
@@ -1116,19 +1118,19 @@ v} *)
 
   val of_bool : bool -> string
   (** [of_bool b] is a string representation for [b]. Relies on
-      {!Pervasives.string_of_bool}. *)
+      {!Stdlib.string_of_bool}. *)
 
   val to_bool : string -> bool option
   (** [to_bool s] is a [bool] from [s], if any. Relies on
-      {!Pervasives.bool_of_string}. *)
+      {!Stdlib.bool_of_string}. *)
 
   val of_int : int -> string
   (** [of_int i] is a string representation for [i]. Relies on
-      {!Pervasives.string_of_int}. *)
+      {!Stdlib.string_of_int}. *)
 
   val to_int : string -> int option
   (** [to_int] is an [int] from [s], if any. Relies on
-      {!Pervasives.int_of_string}. *)
+      {!Stdlib.int_of_string}. *)
 
   val of_nativeint : nativeint -> string
   (** [of_nativeint i] is a string representation for [i]. Relies on
@@ -1156,19 +1158,17 @@ v} *)
 
   val of_float : float -> string
   (** [of_float f] is a string representation for [f]. Relies on
-      {!Pervasives.string_of_float}. *)
+      {!Stdlib.string_of_float}. *)
 
   val to_float : string -> float option
   (** [to_float s] is a [float] from [s], if any. Relies
-      on {!Pervasives.float_of_string}. *)
+      on {!Stdlib.float_of_string}. *)
 end
 
 (** {1:diff Differences with the OCaml [String] module}
 
     First note that it is not a goal of {!Astring} to maintain
-    compatibility with the OCaml
-    {{:http://caml.inria.fr/pub/docs/manual-ocaml/libref/String.html}
-    [String]} module.
+    compatibility with the OCaml {{!Stdlib.String}[String]} module.
 
     In [Astring]:
     {ul
@@ -1189,7 +1189,7 @@ end
        {{:http://www.ecma-international.org/publications/standards/Ecma-094.htm}ISO/IEC
        8859-1} code points). This means they can safely be used on
        UTF-8 encoded strings, they will of course only deal with the
-       US-ASCII subset U+0000 to U+001F of
+       US-ASCII subset U+0000 to U+007F of
        {{:http://unicode.org/glossary/#unicode_scalar_value} Unicode
        scalar values}.}
      {- The module has pre-applied exception safe {!String.Set}
@@ -1219,7 +1219,7 @@ end
     {!String.find} you may find it easier to use
     {!String.with_index_range} which takes indices as arguments and is thus
     directly usable with the result of {!String.find}. But in general
-    index based string processing should be frown upon and replaced
+    index based string processing should be frowned upon and replaced
     by {{!String.extract} substring extraction} combinators.
 
     {2:porttrim Porting [String.trim] usages}
@@ -1358,7 +1358,7 @@ with Exit -> None
 *)
 
 (*---------------------------------------------------------------------------
-   Copyright (c) 2015 Daniel C. Bünzli
+   Copyright (c) 2015 The astring programmers
 
    Permission to use, copy, modify, and/or distribute this software for any
    purpose with or without fee is hereby granted, provided that the above

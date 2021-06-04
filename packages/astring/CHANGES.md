@@ -1,3 +1,17 @@
+v0.8.5 2020-08-08 Zagreb
+------------------------
+
+- Support OCaml 4.12 injectiviy annotation of Map.S (#18).
+  Thanks to Jeremy Yallop for the patch. 
+  
+v0.8.4 2020-06-18 Zagreb
+------------------------
+
+- Handle `Pervasives`'s deprecation.
+- Require OCaml 4.05
+- Add conversions to/from Stdlib sets and maps. Thanks 
+  to Hezekiah M. Carty for the patch.
+
 v0.8.3 2016-09-12 Zagreb
 ------------------------
 

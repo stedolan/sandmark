@@ -1,7 +1,6 @@
 (*---------------------------------------------------------------------------
-   Copyright (c) 2015 Daniel C. Bünzli. All rights reserved.
+   Copyright (c) 2015 The astring programmers. All rights reserved.
    Distributed under the ISC license, see terms at the end of the file.
-   %%NAME%% %%VERSION%%
   ---------------------------------------------------------------------------*)
 
 let err_byte b = Printf.sprintf "%d is not a byte" b
@@ -25,7 +24,7 @@ let hash c = Hashtbl.hash c
 (* Predicates *)
 
 let equal : t -> t -> bool = fun c0 c1 -> c0 = c1
-let compare : t -> t -> int = fun c0 c1 -> Pervasives.compare c0 c1
+let compare : t -> t -> int = fun c0 c1 -> compare c0 c1
 
 (* Bytes as US-ASCII characters *)
 
@@ -84,7 +83,7 @@ let dump ppf c =
   ()
 
 (*---------------------------------------------------------------------------
-   Copyright (c) 2015 Daniel C. Bünzli
+   Copyright (c) 2015 The astring programmers
 
    Permission to use, copy, modify, and/or distribute this software for any
    purpose with or without fee is hereby granted, provided that the above
