@@ -1,1 +1,2 @@
+(dirs :standard \ compilers tools)
 (vendored_dirs packages)
