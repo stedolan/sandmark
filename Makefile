@@ -34,5 +34,6 @@ compilers/4.08.0: SRC=https://github.com/ocaml/ocaml/archive/4.08.0.tar.gz
 compilers/4.08.0: CONF=CC='gcc -fcommon'
 
 compilers/4.12.0: SRC=https://github.com/ocaml/ocaml/archive/4.12.0.tar.gz
+compilers/trunk: SRC=https://github.com/ocaml/ocaml/archive/trunk.tar.gz
 
 compilers/4.10.0+multicore: SRC=https://github.com/ocaml-multicore/ocaml-multicore/archive/parallel_minor_gc.tar.gz
