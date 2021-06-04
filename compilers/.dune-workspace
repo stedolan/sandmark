@@ -1,2 +1,0 @@
-(lang dune 2.8)
-(context (default (name 4.12.0) (paths (PATH ("/home/stephen/projects/sandmark2/compilers/4.12.0/_install/bin" :standard)))))
