@@ -29,7 +29,7 @@
 
 #define ZStream_val(v) ((z_stream *) (v))
 
-static value * camlzip_error_exn = NULL;
+static const value * camlzip_error_exn = NULL;
 
 static void camlzip_error(char * fn, value vzs)
 {

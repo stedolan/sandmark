@@ -26,14 +26,14 @@ let funcnames = ref StringSet.empty
 let () =
   let rPROLOG = Str.regexp "[ 	]*PROLOG(\\([^)]*\\))" in
   let input = open_in asmfilename in
-  Printf.printf "found assembly file %s\n" asmfilename;
+  (*Printf.printf "found assembly file %s\n" asmfilename;*)
   try
     while true do
       let s = input_line input in
       if Str.string_match rPROLOG s 0
       then
 	let funcname = Str.matched_group 1 s in
-	Printf.printf "  found %s\n" funcname;
+	(* Printf.printf "  found %s\n" funcname; *)
 	funcnames := StringSet.add funcname !funcnames
     done
   with

@@ -582,8 +582,8 @@ CAMLprim value ml_z_of_substring_base(value b, value v, value offset, value leng
       || (intnat)caml_string_length(v) < ofs + len)
     caml_invalid_argument("Z.of_substring_base: invalid offset or length");
   /* process the string */
-  char *d = String_val(v) + ofs;
-  char *end = d + len;  
+  const char *d = String_val(v) + ofs;
+  const char *end = d + len;  
   mp_size_t i, sz, sz2;
   mp_limb_t sign = 0;
   intnat base = Long_val(b);
@@ -778,7 +778,7 @@ CAMLprim value ml_z_format(value f, value v)
   char* buf, *dst;
   mp_size_t i, size_dst, max_size;
   value r;
-  char* fmt = String_val(f);
+  const char* fmt = String_val(f);
   int base = 10;     /* base */
   int cas = 0;       /* uppercase X / lowercase x */
   int width = 0;
